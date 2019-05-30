@@ -12,19 +12,19 @@ var plot = function () {
   });
 
   // have all the methods and parameters 
-var mehtodQueue=[];
+var methodQueue=[];
 
 
 // run functions stored in methodQueue, wait for each to finished and run next
 var run = function(){
   
   // first function and parameter in the methodQueue
-  var firstFunc = mehtodQueue[0].method;
-  var firstParam= mehtodQueue[0].param;
+  var firstFunc = methodQueue[0].method;
+  var firstParam= methodQueue[0].param;
 
 
-  var end = mehtodQueue.length-1;
-  var queLength= mehtodQueue.length;
+  var end = methodQueue.length-1;
+  var queLength= methodQueue.length;
 
   
   // var onNextObjList;
@@ -32,22 +32,22 @@ var run = function(){
 
   if (queLength > 2){
 
-  // onNextObjList=[{onEndFunc: mehtodQueue[end].method, param:mehtodQueue[end].param}];
+  // onNextObjList=[{onEndFunc: methodQueue[end].method, param:methodQueue[end].param}];
 
   // onNextObj will be used in onEndFunc to evoke another function after it!(look at for
   // example anim1 to see where onNextObj will be used!)
 
   // the first onNextObj is the last function we have to run and because it is the last one
   // it has no onNextObj in it!
-  onNextObj ={onEndFunc: mehtodQueue[end].method, param:mehtodQueue[end].param};
+  onNextObj ={onEndFunc: methodQueue[end].method, param:methodQueue[end].param};
   
   // to chain functions after another we use onNextObj: 
   // each onNextObj have another onNextObj inside it! 
   // thats will be used in first function to evoke next function, because the next functin 
   // will be given onNextObj as input, it will envoke a chain of functions called after another! 
   for (let i=0; i< queLength-3; i++){
-    let nextObj= {onEndFunc: mehtodQueue[end-(i+1)].method,
-                  param: mehtodQueue[end-(i+1)].param,
+    let nextObj= {onEndFunc: methodQueue[end-(i+1)].method,
+                  param: methodQueue[end-(i+1)].param,
                   onNextObj: onNextObj};
     
     // nextObj will be onNextObj for the next function:
@@ -57,10 +57,10 @@ var run = function(){
   }
 
   // notice onNextObj has all the onNextObjs for all function callings 
-  var onEndObj = {onEndFunc: mehtodQueue[1].method,
-                  param: mehtodQueue[1].param,
+  var onEndObj = {onEndFunc: methodQueue[1].method,
+                  param: methodQueue[1].param,
                   onNextObj: onNextObj}
-  firstFunc(firstParam, onEndObj)                
+  firstFunc(...firstParam, onEndObj)                
 
 
 
@@ -73,7 +73,7 @@ var run = function(){
 
 // next: store methods and parameters in methodQueue to be used later 
 var next= function(obj){
-  mehtodQueue.push(obj)
+  methodQueue.push(obj)
 
   return this
 }
@@ -129,7 +129,7 @@ return this
 }
 
 
-var anim2 = function (y, onEndObj=null){
+var anim2 = function (x,y, onEndObj=null){
   var onEndFunc = null
   if (onEndObj){
       onEndFunc=onEndObj.onEndFunc;
@@ -143,7 +143,7 @@ var anim2 = function (y, onEndObj=null){
   svg.append('rect')
   .transition()
   .delay(1000)
-  .attr('x', 100)
+  .attr('x', x)
   .attr('y', y) 
   .attr('width', 100)
   .attr('height', 100)
@@ -162,7 +162,7 @@ var anim2 = function (y, onEndObj=null){
   .on('end', function () {
       if(onEndFunc){
           // onEndFunc.call(this,param);
-        onEndFunc(param, onNextObj);
+        onEndFunc(...param, onNextObj);
         }
   });
   
@@ -182,10 +182,10 @@ return {anim1: anim1,
 var plt =plot()
 
 plt
-.next({method:plt.anim2, param:100})
-.next({method:plt.anim1, param:200})
-.next({method:plt.anim2, param:300})
-.next({method:plt.anim1, param:400})
-.next({method:plt.anim1, param:500})
+.next({method:plt.anim2, param:[100, 200]})
+.next({method:plt.anim2, param:[200, 300]})
+// .next({method:plt.anim2, param:300})
+// .next({method:plt.anim1, param:400})
+// .next({method:plt.anim1, param:500})
 .run()
 

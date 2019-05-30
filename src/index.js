@@ -23,17 +23,22 @@ var data3={vecs: [vec1, vec2, vec3],
            colors:['#FF0000', '#FF0000', '#FF0000']}
 
 
-var plot1 = plot();
-plot1
+var plt = plot();
+plt
 .set_svg_configs({
   svg_container_width: window.innerWidth,
   svg_container_height: window.innerHeight
 })
 .set_data(data)
-.draw_grids()
-// .draw()
+.draw(true, true)
+// .add_data(data3, true, true)
 
+plt.add_data(data3, true, true)
 
+// .set_data(data)
+// .next({method: plt.draw, param:[true, true]})
+// .next({method: plt.add_data, param:[data3, true, true]})
+// .run()
 
 
 // .draw(true)
