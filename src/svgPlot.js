@@ -531,28 +531,20 @@ var _vec_creation_animation = function (vec, xScale, yScale, svgContainer, color
       return pathLength;
     })
     .transition()
+    .duration(500)
     .ease(d3.easeLinear)
-    .on('start', function Linecreation() {
-      d3.active(this)
-        .transition()
-        .duration(100)
-        .attrTween('stroke-dashoffset', line_tweenfunc)
-        .delay(10)
-        .attr('marker-end', '')
-        .transition()
-        .ease(d3.easeLinear)
-        .on('start', function arrowCreateion() {
-          d3.active(this)
-            .transition()
-            .duration(1000)
-            .attrTween('marker-end', arrow_tweenfunc)
-        })
-        .on('end', function (){
-          if(onEndObj){
-            onEndFunc(...param, onNextObj);
-          }
-        });
-    });
+    .attrTween('stroke-dashoffset', line_tweenfunc)
+    .transition()
+    .duration(500)
+    .attrTween('marker-end', arrow_tweenfunc)
+    .transition()
+    .delay(5000)
+    .on('end', function (){    
+            if(onEndObj){
+              onEndFunc(...param, onNextObj);
+            }
+          })
+
 
   // tween functions for animation:
   function line_tweenfunc() {
@@ -661,7 +653,7 @@ const svec_plot = () => {
         // check if its the last one to be done --> envoke next action 
         // by setting onEndObj
         if (i == vecs.length-1){
-          _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i],onEndObj);
+          _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], preDelay,onEndObj);
         }else{
           _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i]);
         }
@@ -701,7 +693,7 @@ const svec_plot = () => {
 
         // check if it is the last thing to be done then 
         // give next step inside onEndObj
-        if (i== vecs.queLength-1){
+        if (i== vecs.length-1){
         _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], onEndObj);
         }else{
           _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i]);
@@ -768,7 +760,7 @@ const svec_plot = () => {
     var queLength = self.methodQueue.length;
 
 
-    // var onNextObjList;
+    // var onNextObj to be used as onEndobj for the next onEndFunc;
     var onNextObj;
 
     if (queLength > 2) {

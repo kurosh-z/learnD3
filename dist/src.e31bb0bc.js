@@ -16845,14 +16845,10 @@ var _vec_creation_animation = function _vec_creation_animation(vec, xScale, ySca
   }).attr('stroke-dashoffset', function () {
     var pathLength = this.getTotalLength();
     return pathLength;
-  }).transition().ease(d3.easeLinear).on('start', function Linecreation() {
-    d3.active(this).transition().duration(100).attrTween('stroke-dashoffset', line_tweenfunc).delay(10).attr('marker-end', '').transition().ease(d3.easeLinear).on('start', function arrowCreateion() {
-      d3.active(this).transition().duration(1000).attrTween('marker-end', arrow_tweenfunc);
-    }).on('end', function () {
-      if (onEndObj) {
-        onEndFunc.apply(void 0, _toConsumableArray(param).concat([onNextObj]));
-      }
-    });
+  }).transition().duration(500).ease(d3.easeLinear).attrTween('stroke-dashoffset', line_tweenfunc).transition().duration(500).attrTween('marker-end', arrow_tweenfunc).transition().delay(5000).on('end', function () {
+    if (onEndObj) {
+      onEndFunc.apply(void 0, _toConsumableArray(param).concat([onNextObj]));
+    }
   }); // tween functions for animation:
 
   function line_tweenfunc() {
@@ -16949,7 +16945,7 @@ var svec_plot = function svec_plot() {
         // check if its the last one to be done --> envoke next action 
         // by setting onEndObj
         if (_i4 == vecs.length - 1) {
-          _vec_creation_animation(vecs[_i4], xScale, yScale, self.svgContainer, colorIds[_i4], onEndObj);
+          _vec_creation_animation(vecs[_i4], xScale, yScale, self.svgContainer, colorIds[_i4], preDelay, onEndObj);
         } else {
           _vec_creation_animation(vecs[_i4], xScale, yScale, self.svgContainer, colorIds[_i4]);
         }
@@ -16987,7 +16983,7 @@ var svec_plot = function svec_plot() {
       for (var i = 0; i < vecs.length; i++) {
         // check if it is the last thing to be done then 
         // give next step inside onEndObj
-        if (i == vecs.queLength - 1) {
+        if (i == vecs.length - 1) {
           _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], onEndObj);
         } else {
           _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i]);
@@ -17053,7 +17049,7 @@ var svec_plot = function svec_plot() {
     var firstFunc = self.methodQueue[0].method;
     var firstParam = self.methodQueue[0].param;
     var end = self.methodQueue.length - 1;
-    var queLength = self.methodQueue.length; // var onNextObjList;
+    var queLength = self.methodQueue.length; // var onNextObj to be used as onEndobj for the next onEndFunc;
 
     var onNextObj;
 
@@ -17105,7 +17101,79 @@ var svec_plot = function svec_plot() {
 };
 
 exports.default = svec_plot;
-},{"d3":"../node_modules/d3/build/d3.js"}],"index.js":[function(require,module,exports) {
+},{"d3":"../node_modules/d3/build/d3.js"}],"../node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
+var bundleURL = null;
+
+function getBundleURLCached() {
+  if (!bundleURL) {
+    bundleURL = getBundleURL();
+  }
+
+  return bundleURL;
+}
+
+function getBundleURL() {
+  // Attempt to find the URL of the current script and use that as the base URL
+  try {
+    throw new Error();
+  } catch (err) {
+    var matches = ('' + err.stack).match(/(https?|file|ftp|chrome-extension|moz-extension):\/\/[^)\n]+/g);
+
+    if (matches) {
+      return getBaseURL(matches[0]);
+    }
+  }
+
+  return '/';
+}
+
+function getBaseURL(url) {
+  return ('' + url).replace(/^((?:https?|file|ftp|chrome-extension|moz-extension):\/\/.+)\/[^/]+$/, '$1') + '/';
+}
+
+exports.getBundleURL = getBundleURLCached;
+exports.getBaseURL = getBaseURL;
+},{}],"../node_modules/parcel-bundler/src/builtins/css-loader.js":[function(require,module,exports) {
+var bundle = require('./bundle-url');
+
+function updateLink(link) {
+  var newLink = link.cloneNode();
+
+  newLink.onload = function () {
+    link.remove();
+  };
+
+  newLink.href = link.href.split('?')[0] + '?' + Date.now();
+  link.parentNode.insertBefore(newLink, link.nextSibling);
+}
+
+var cssTimeout = null;
+
+function reloadCSS() {
+  if (cssTimeout) {
+    return;
+  }
+
+  cssTimeout = setTimeout(function () {
+    var links = document.querySelectorAll('link[rel="stylesheet"]');
+
+    for (var i = 0; i < links.length; i++) {
+      if (bundle.getBaseURL(links[i].href) === bundle.getBundleURL()) {
+        updateLink(links[i]);
+      }
+    }
+
+    cssTimeout = null;
+  }, 50);
+}
+
+module.exports = reloadCSS;
+},{"./bundle-url":"../node_modules/parcel-bundler/src/builtins/bundle-url.js"}],"index.scss":[function(require,module,exports) {
+var reloadCSS = require('_css_loader');
+
+module.hot.dispose(reloadCSS);
+module.hot.accept(reloadCSS);
+},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 var _svgVector = _interopRequireDefault(require("./svgVector"));
@@ -17113,6 +17181,8 @@ var _svgVector = _interopRequireDefault(require("./svgVector"));
 var _svgPlot = _interopRequireDefault(require("./svgPlot"));
 
 var d3 = _interopRequireWildcard(require("d3"));
+
+require("./index.scss");
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
@@ -17146,20 +17216,24 @@ var plt = (0, _svgPlot.default)();
 plt.set_svg_configs({
   svg_container_width: window.innerWidth,
   svg_container_height: window.innerHeight
-}).set_data(data).draw(true, true); // .add_data(data3, true, true)
-
-plt.add_data(data3, true, true); // .set_data(data)
-// .next({method: plt.draw, param:[true, true]})
-// .next({method: plt.add_data, param:[data3, true, true]})
-// .run()
-// .draw(true)
+}) // .set_data(data)
+// .draw(true, true)
+// .add_data(data3, true, true)
+.set_data(data) // .draw(true, true)
+.next({
+  method: plt.draw,
+  param: [true, true]
+}).next({
+  method: plt.add_data,
+  param: [data3, true, true]
+}).run(); // .draw(true)
 // .add_data(data3,true, true);
 // setTimeout(function(){ plot1.add_data(data3, true, true); }, 2000);
 // setTimeout(function(){ plot1
 //   .set_data(data)
 //   .draw(true , true)
 //   ; }, 4000);
-},{"./svgVector":"svgVector.js","./svgPlot":"svgPlot.js","d3":"../node_modules/d3/build/d3.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./svgVector":"svgVector.js","./svgPlot":"svgPlot.js","d3":"../node_modules/d3/build/d3.js","./index.scss":"index.scss"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
