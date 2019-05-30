@@ -1,0 +1,24 @@
+{
+  "name": "LearnD3",
+  "version": "1.0.0",
+  "description": "learn d3.js",
+  "main": "index.js",
+  "scripts": {
+    "dev": "parcel src/index.html",
+    "prod": "parcel build serc/index.html"
+  },
+  "author": "kurosh",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "d3": "4.2",
+    "element-to-path": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.130",
+    "eslint": "^5.16.0",
+    "lodash": "^4.17.11",
+    "parcel-bundler": "^1.12.3",
+    "underscore": "^1.9.1"
+  }
+}

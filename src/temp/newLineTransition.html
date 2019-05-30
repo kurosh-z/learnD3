@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<style>
+
+    
+    </style>
+    <svg width="800" height="400"></svg>
+<body>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.4.2/d3.js"></script>
+        <script>
+        
+                var color_pool = d3.scaleOrdinal(d3.schemeCategory10);
+
+                let data1= {x1:-40, y1:100, x2:40, y2:100};
+                let data2= {x1:-40, y1:200, x2:40, y2:200};
+                let data3= {x1:-40, y1:300, x2:40, y2:300};
+                let data4= {x1:-40, y1:400, x2:40, y2:400};
+                let data5= {x1:-40, y1:500, x2:40, y2:500};
+                let data6= {x1:-40, y1:-100, x2:40, y2:-100};
+                let data7= {x1:-40, y1:-200, x2:40, y2:-200};
+                let data8= {x1:-40, y1:-300, x2:40, y2:-300};
+                let data9= {x1:-40, y1:-400, x2:40, y2:-400};
+                let data10= {x1:-40, y1:-500, x2:40, y2:-500};
+                
+                var lineList=[[data1, data2, data8, data6, data10], 
+                              [data3, data4, data5, data6, data7, data8,data9]];
+
+                var xScale = d3.scaleLinear()
+                .domain([-45, 45])
+                .range([0, 380]);
+
+                var yScale = d3.scaleLinear()
+                .domain([-500, 500])
+                .range([0, 400]);
+                
+                var svg = d3.select("svg"),
+                    width = +svg.attr("width"),
+                    height = +svg.attr("height");
+
+                svg.append("g")
+                    .attr('id', 'Axis')
+                    .attr('class', 'xAxis')
+                    .attr("transform", "translate(" + 0 + "," + yScale(0) + ")")
+                    .transition()
+                    .duration(800)
+                    .ease(d3.easeLinear)
+                    .call(d3.axisBottom(xScale))
+                
+                svg.append("g")
+                    .attr('id', 'Axis')
+                    .attr('class', 'yAxis')
+                    .attr("transform", "translate(" + xScale(0) + "," + 0 + ")")
+                    .transition()
+                    .duration(800)
+                    .ease(d3.easeLinear)
+                    .call(d3.axisLeft(yScale));
+                                
+                var t = d3.transition()
+                      .duration(750);
+
+                let line1= svg.append('line')
+                .attr('x1', xScale(data1.x1))
+                .attr('y1', yScale(data1.y1))
+                .attr('x2', xScale(data1.x2))
+                .attr('y2', yScale(data1.y2))
+                .attr('stroke', 'blue')
+                //.attr('stroke-width', '0px')
+                //.transition(t)
+                //.attr('stroke-width','2px')
+                
+                
+
+                
+                //line1.attr('stroke', color_pool(1))
+
+
+
+                //console.log('x0',xScale(0))
+                //console.log('y0',yScale(0))
+
+
+                
+                function update(data) {
+                  
+                  
+                  // JOIN new data with old elements.
+                  var lines = svg.selectAll("line")
+                    .data(data, function(d) { return d; });
+                
+                  // EXIT old elements not present in new data.
+                  lines.exit()
+                      .attr("class", "exit")
+                      .transition(t)
+                      .attr('stroke-width', '0px')
+                      .remove();
+                
+                  // UPDATE old elements present in new data.
+                  lines.attr("class", "update")
+                      .attr('stroke', 'red')
+                      .attr('stroke-width', '0px')
+                      .transition(t)
+                      .attr('stroke-width', '1px')
+                
+                  // ENTER new elements present in new data.
+                  lines.enter().append("text")
+                      .attr("class", "enter")
+                      .attr("x1", function(d) { return xScale(d.x1); })
+                      .attr("y1", function(d) { return yScale(d.y1); })
+                      .attr("x2", function(d) { return xScale(d.x2); })
+                      .attr("y2", function(d) { return yScale(d.y2); })
+                      .attr('stroke', 'blue')
+                      .attr('stroke-width', '0px')
+                      .transition(t)
+                      .attr('stroke-width', '1.5px')
+
+                }
+                
+                // The initial display.
+                update(lineList[0]);
+                
+                //d3.interval(function(){
+                //    update(lineList[Math.floor(Math.random() * 1)] );
+                //}, 1500)
+                
+                
+                </script>
+    
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div id ='chartholder1'></div>
+    <div id ='chartholder2'></div>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.4.2/d3.js" ></script>
+    <script type="text/javascript" >
+            var width = window.innerWidth / 2 ;
+            var height = window.innerHeight / 2 ;
+            var width2 = window.innerWidth / 2 ;
+            var height2 = window.innerHeight / 2 ;
+            var padding = 10;
+            
+            
+              var svg = d3.select('#chartholder1')
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .call(d3.zoom().on("zoom", function() {
+                  svg.attr("transform", d3.event.transform);
+                }))
+                .append("g");
+            
+              var viewport = svg.append('g');
+            
+              var xScale = d3.scaleLinear().range([0 + padding, width - padding]).domain([-50, 50]); 
+              var yScale = d3.scaleLinear().range([0 + padding, height - padding]).domain([50, -50]);
+            
+              // Add the x Axis
+              svg.append("g")
+                .attr("transform", "translate(" + 0 + "," + yScale(0) + ")")
+                .call(d3.axisBottom(xScale));
+            
+              // Add the y Axis
+              svg.append("g")
+                .attr("transform", "translate(" + xScale(0) + "," + 0 + ")")
+                .call(d3.axisLeft(yScale));
+              
+              var data = [[0, 10], [width, 10]];
+              var lineGenerator = d3.line()
+                .x(function(d) { return d[0]; })
+                .y(function(d) { return yScale(d[1]); })
+                .curve(d3.curveLinear);
+
+                svg.append('path')
+                .attr('d', lineGenerator(data))
+                .attr('fill', 'none')
+                .attr('stroke', 'blue')
+              
+          
+
+    </script>    
+</body>
+</html>

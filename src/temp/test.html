@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+  .circle {
+    fill: steelblue;
+    stroke: '#fff';
+  }
+  .label {
+    fill: #777;
+  }
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+var svg = d3.select("body") // Select the body element
+    .append("svg")          // Append an SVG element to the body
+    .attr("width", 960)     // make it 960 pixels wide
+    .attr("height", 500)    // make it 500 pixels high
+    .append("circle")       // append a circle to the svg
+    .style("fill", "blue")  // fill the circle with 'blue'
+    .attr("r", 20)          // set the radius to 10 pixels
+    .attr('cx', 40)         // position the circle at 40 on the x axis
+    .attr('cy', 250)        // position the circle at 250 on the y axis
+    // 1st transition  
+    .transition()           // apply a transition
+    .duration(2000)         // apply it over 4000 milliseconds
+    .attr('cx', 920)        // new horizontal position at 920 on x axis
+    // 2nd transition
+    .transition()           // apply a transition
+    .duration(4000)         // apply it over 4000 milliseconds
+    .attr('r', 40)          // new radius of 40 pixels
+    // 3rd transition
+    .transition()           // apply a transition
+    .duration(4000)         // apply it over 4000 milliseconds
+    .style('fill', "red");  // new colour red
+
+</script>
+</body>
