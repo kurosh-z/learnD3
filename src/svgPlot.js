@@ -201,7 +201,8 @@ var _configure_axis = function (svgContainer, svg_config, vecs=null , grid_domai
   svgContainer.select('.xAxis')
     .attr("transform", "translate(" + 0 + "," + yScale(0) + ")")
     .transition()
-    .duration(500)
+    .duration(1000)
+    .delay(1500)
     .ease(d3.easeLinear)
     .call(d3.axisBottom(xScale))
 
@@ -209,7 +210,8 @@ var _configure_axis = function (svgContainer, svg_config, vecs=null , grid_domai
   svgContainer.select('.yAxis')
     .attr("transform", "translate(" + xScale(0) + "," + 0 + ")")
     .transition()
-    .duration(500)
+    .duration(1000)
+    .delay(500)
     .ease(d3.easeLinear)
     .call(d3.axisLeft(yScale));
 
@@ -305,11 +307,12 @@ function _create_path_grid(svgContainer, xScale, yScale, config) {
   }
 }
 
-function _animate_grid_creation(svgContainer, xScale, yScale, config, h_grids_conf, v_grids_conf) {
+function _animate_grid_creation(svgContainer, xScale, yScale, config, h_grids_conf, v_grids_conf, post_delay=0, onEndObj=null ) {
 
   // remove existing grids
   // TODO: do you need animation for removing?
   _remove_path_grid()
+  
 
   // creatte new ones :
   var width = config.svg_container_width,
@@ -321,7 +324,7 @@ function _animate_grid_creation(svgContainer, xScale, yScale, config, h_grids_co
 
 
   // create horizontal grids                 
-  let originalxGrids = svgContainer.select('.xGrids')
+  let xGrids = svgContainer.select('.xGrids')
     .append('g');
 
   for (let i = 0; i < xData.length; i++) {
@@ -332,13 +335,13 @@ function _animate_grid_creation(svgContainer, xScale, yScale, config, h_grids_co
       [width - margin.x, yScale(xData[i])]
     ];
     // animate line
-    _line_path_creation_animation(originalxGrids, xdata, h_grids_conf);
+    _line_path_creation_animation(xGrids, xdata, h_grids_conf);
 
   }
 
   //vertical grids
   // TODO: change orignalxGrids to xGrids and yGrids the class will be changed automatically!
-  var originalyGrids = svgContainer.select('.yGrids')
+  var yGrids = svgContainer.select('.yGrids')
     .append('g');
 
   for (let i = 0; i < yData.length; i++) {
@@ -347,7 +350,11 @@ function _animate_grid_creation(svgContainer, xScale, yScale, config, h_grids_co
       [xScale(yData[i]), margin.y],
       [xScale(yData[i]), height - margin.y]
     ];
-    _line_path_creation_animation(originalyGrids, ydata, v_grids_conf);
+    if (i==yData.length-1){
+    _line_path_creation_animation(yGrids, ydata, v_grids_conf, post_delay, onEndObj);
+    }else{
+      _line_path_creation_animation(yGrids, ydata, v_grids_conf);
+    }
   }
 
 
@@ -388,8 +395,13 @@ var _remove_path_grid = function () {
  *              remove them without changing other girids!
  * 
  */
-var _line_path_creation_animation = function (lineHolder, data, grids_conf) {
+var _line_path_creation_animation = function (lineHolder, data, grids_conf,post_delay=0, onEndObj=null) {
 
+  if (onEndObj){
+    var onEndFunc=onEndObj.onEndFunc,
+        param = onEndObj.param,
+        onNextObj = onEndObj.onNextObj;
+  }
 
   var opacity = grids_conf.opacity,
     stroke_color = grids_conf.stroke_color,
@@ -415,14 +427,25 @@ var _line_path_creation_animation = function (lineHolder, data, grids_conf) {
       return pathLength;
     })
     .transition()
+    .delay(delay)
+    .duration(duration)
+    .attrTween('stroke-dashoffset', line_tweenfunc)
     .ease(d3.easeLinear)
-    .on('start', function Linecreation() {
-      d3.active(this)
-        .transition()
-        .duration(duration)
-        .attrTween('stroke-dashoffset', line_tweenfunc)
-        .delay(delay)
+    .transition()
+    .delay(post_delay)
+    .on('end', () =>{
+      if(onEndObj){
+        onEndFunc(...param, onNextObj)
+      }
+
     });
+    // .on('start', function Linecreation() {
+    //   d3.active(this)
+    //     .transition()
+    //     .duration(duration)
+    //     .attrTween('stroke-dashoffset', line_tweenfunc)
+    //     .delay(delay)
+    // });
 
   // tween functions for animation:
   function line_tweenfunc() {
@@ -505,7 +528,7 @@ var _draw_vectors = function (vec, xScale, yScale, svgContainer, colorId) {
 
 }
 
-var _vec_creation_animation = function (vec, xScale, yScale, svgContainer, colorId, onEndObj=null) {
+var _vec_creation_animation = function (vec, xScale, yScale, svgContainer, colorId,pre_delay=100, post_delay=500, onEndObj=null) {
 
   if (onEndObj){
     var onEndFunc=onEndObj.onEndFunc,
@@ -532,16 +555,18 @@ var _vec_creation_animation = function (vec, xScale, yScale, svgContainer, color
     })
     .transition()
     .duration(500)
+    .delay(pre_delay)
     .ease(d3.easeLinear)
     .attrTween('stroke-dashoffset', line_tweenfunc)
     .transition()
     .duration(500)
     .attrTween('marker-end', arrow_tweenfunc)
     .transition()
-    .delay(5000)
+    .delay(post_delay)
     .on('end', function (){    
             if(onEndObj){
-              onEndFunc(...param, onNextObj);
+              console.log('param: ',param);
+              param ? onEndFunc(...param, onNextObj):onEndFunc(null, onNextObj);
             }
           })
 
@@ -599,7 +624,7 @@ const svec_plot = () => {
    *             the vectors again.
    * //TODO: you should add grids here too!
    */
-  var add_data=(vec_data, anim = false, auto_scale_axis = false, onEndObj=null) =>{
+  var add_data=(vec_data, anim = false, auto_scale_axis = false, pre_delay, post_delay, onEndObj=null) =>{
 
     // digest new data:
     var newData = _digest_data(vec_data, self.svgContainer);
@@ -612,12 +637,15 @@ const svec_plot = () => {
     // else the new data will be added to added_data and draw without axis scaling
     /* 
      *   TODO: maybe use change draw function a little bit to be able to call it here!
-     *         should I remve hier or somewhere esle?
+     *         should I remove them here or somewhere esle?
      */
     if (auto_scale_axis) {
 
       // remove everything in svgContainer before redraw
       self.svgContainer.selectAll('.vector')
+        .transition()
+        .duration(1000)
+        .ease(d3.easeLinear)
         .remove();
 
 
@@ -650,12 +678,13 @@ const svec_plot = () => {
     // use new data to draw vectors
     if (anim) {
       for (let i = 0; i < vecs.length; i++) {
-        // check if its the last one to be done --> envoke next action 
+        // check if its the last one to be done --> evoke next action 
         // by setting onEndObj
         if (i == vecs.length-1){
-          _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], preDelay,onEndObj);
-        }else{
-          _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i]);
+          _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i],pre_delay, post_delay, onEndObj);
+        }
+        else{
+          _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], pre_delay, 0);
         }
       }
       // if no animation is requried simply do it!
@@ -674,7 +703,7 @@ const svec_plot = () => {
 
   // draw vectors
   //TODO: give grid_configs (strokes, color, opacity etc) from user?
-  var draw = (anim = false, grids = true, onEndObj=null)=> {
+  var draw = (anim = false, grids = true, pre_delay=200, post_delay=1000, onEndObj=null)=> {
 
     // configure axis, makes things ready for draw 
     self.axis_scale = _configure_axis( self.svgContainer, self.config, self.data.vecs);
@@ -694,9 +723,10 @@ const svec_plot = () => {
         // check if it is the last thing to be done then 
         // give next step inside onEndObj
         if (i== vecs.length-1){
-        _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], onEndObj);
-        }else{
-          _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i]);
+        _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], pre_delay, post_delay, onEndObj);
+        }
+        else{
+          _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], pre_delay, 0);
         }
       }
 
@@ -715,20 +745,33 @@ const svec_plot = () => {
    *   showing vectors)
    * //TODO: Maybe you can add grid points too?!
    */
-  var draw_grids = function (grid_domain={x:100, y:100}, h_grids_conf = {}, v_grids_conf = {}) {
+  var draw_grids = function (paramObj=null,onEndObj=null) {
 
+    // grid_domain={x:100, y:100}, h_grids_conf = {}, v_grids_conf = {}, post_delay=1000, 
+    // TODO: think about other way to manage your deflaut parameters
+
+    var dflt_paramObj= {grid_domain:{x:100, y:100},
+                        h_grids_conf:{},
+                        v_grids_conf:{},
+                        post_delay:4000}
+                        
+    _digest_configs(dflt_paramObj,paramObj)
+
+    var grid_domain = dflt_paramObj.grid_domain
+    var h_grids_conf=dflt_paramObj.h_grids_conf
+    var v_grids_conf=dflt_paramObj.v_grids_conf
+    var post_delay= dflt_paramObj.post_delay
     
-
-    // digestign user config:
+    // digesting user config:
     _digest_configs(self.horizontal_grids_config, h_grids_conf);
     _digest_configs(self.vertical_grids_cofnig, v_grids_conf);
 
-   let scales = _configure_axis(self.svgContainer, self.config, null, grid_domain );
-  
+    let scales = _configure_axis(self.svgContainer, self.config, null, grid_domain);
 
-    _animate_grid_creation(self.svgContainer, scales.x, scales.y, self.config, self.horizontal_grids_config, self.vertical_grids_cofnig)
 
-  return this
+    _animate_grid_creation(self.svgContainer, scales.x, scales.y, self.config, self.horizontal_grids_config, self.vertical_grids_cofnig, post_delay, onEndObj)
+
+    return this
 
   }
 
@@ -778,11 +821,11 @@ const svec_plot = () => {
       // to chain functions after another we use onNextObj: 
       // each onNextObj have another onNextObj inside it! 
       // thats will be used in first function to evoke next function, because the next functin 
-      // will be given onNextObj as input, it will envoke a chain of functions called after another! 
+      // will be given onNextObj as input, it will evoke a chain of functions  after another! 
       for (let i = 0; i < queLength - 3; i++) {
         let nextObj = {
           onEndFunc: self.methodQueue[end - (i + 1)].method,
-          param: self.methodQueue[end - (i + 1)].param,
+          param: self.methodQueue[end - (i + 1)].param, // ?self.methodQueue[end - (i + 1)].param : null ,
           onNextObj: onNextObj
         };
 
@@ -792,7 +835,7 @@ const svec_plot = () => {
       }
     }
 
-    // notice onNextObj has all the onNextObjs for all function callings 
+    // notice onNextObj now has all the onNextObjs for all function callings 
     var onEndObj = {
       onEndFunc: self.methodQueue[1].method,
       param: self.methodQueue[1].param,

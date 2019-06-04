@@ -29,29 +29,20 @@ plt
 .set_svg_configs({
   svg_container_width: window.innerWidth,
   svg_container_height: window.innerHeight
-})
+});
 // .set_data(data)
 // .draw(true, true)
 // .add_data(data3, true, true)
 
-
+plt
 .set_data(data)
-// .draw(true, true)
-.next({method: plt.draw, param:[true, true]})
-.next({method: plt.add_data, param:[data3, true, true]})
+// .draw(true, true, 3000, 0)
+.next({method: plt.draw, param:[true, true, 1000, 2000]})
+.next({method: plt.draw_grids, param: null})
+.next({method: plt.add_data, param:[data3, true, true, 2000, 3000]})
 .run()
 
-
-// .draw(true)
-// .add_data(data3,true, true);
-
-// setTimeout(function(){ plot1.add_data(data3, true, true); }, 2000);
-
-// setTimeout(function(){ plot1
-//   .set_data(data)
-//   .draw(true , true)
-//   ; }, 4000);
-
+// plt.draw_grids({})
 
 
 

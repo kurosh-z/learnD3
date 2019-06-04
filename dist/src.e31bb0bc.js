@@ -16651,9 +16651,9 @@ var _configure_axis = function _configure_axis(svgContainer, svg_config) {
   var xScale = d3.scaleLinear().domain([-domain.x, domain.x]).range([0 + margin.x, svg_width - margin.x]);
   var yScale = d3.scaleLinear().domain([domain.y, -domain.y]).range([0 + margin.y, svg_height - margin.y]); // add x Axis
 
-  svgContainer.select('.xAxis').attr("transform", "translate(" + 0 + "," + yScale(0) + ")").transition().duration(500).ease(d3.easeLinear).call(d3.axisBottom(xScale)); // Add the y Axis
+  svgContainer.select('.xAxis').attr("transform", "translate(" + 0 + "," + yScale(0) + ")").transition().duration(1000).delay(1500).ease(d3.easeLinear).call(d3.axisBottom(xScale)); // Add the y Axis
 
-  svgContainer.select('.yAxis').attr("transform", "translate(" + xScale(0) + "," + 0 + ")").transition().duration(500).ease(d3.easeLinear).call(d3.axisLeft(yScale));
+  svgContainer.select('.yAxis').attr("transform", "translate(" + xScale(0) + "," + 0 + ")").transition().duration(1000).delay(500).ease(d3.easeLinear).call(d3.axisLeft(yScale));
   var axis_scale = {
     x: xScale,
     y: yScale
@@ -16702,6 +16702,9 @@ function _create_path_grid(svgContainer, xScale, yScale, config) {
 }
 
 function _animate_grid_creation(svgContainer, xScale, yScale, config, h_grids_conf, v_grids_conf) {
+  var post_delay = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 0;
+  var onEndObj = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : null;
+
   // remove existing grids
   // TODO: do you need animation for removing?
   _remove_path_grid(); // creatte new ones :
@@ -16713,24 +16716,28 @@ function _animate_grid_creation(svgContainer, xScale, yScale, config, h_grids_co
       xData = yScale.ticks(10),
       yData = xScale.ticks(10); // create horizontal grids                 
 
-  var originalxGrids = svgContainer.select('.xGrids').append('g');
+  var xGrids = svgContainer.select('.xGrids').append('g');
 
   for (var i = 0; i < xData.length; i++) {
     // set new data
     var xdata = [[margin.x, yScale(xData[i])], [width - margin.x, yScale(xData[i])]]; // animate line
 
-    _line_path_creation_animation(originalxGrids, xdata, h_grids_conf);
+    _line_path_creation_animation(xGrids, xdata, h_grids_conf);
   } //vertical grids
   // TODO: change orignalxGrids to xGrids and yGrids the class will be changed automatically!
 
 
-  var originalyGrids = svgContainer.select('.yGrids').append('g');
+  var yGrids = svgContainer.select('.yGrids').append('g');
 
   for (var _i3 = 0; _i3 < yData.length; _i3++) {
     // set new data:
     var ydata = [[xScale(yData[_i3]), margin.y], [xScale(yData[_i3]), height - margin.y]];
 
-    _line_path_creation_animation(originalyGrids, ydata, v_grids_conf);
+    if (_i3 == yData.length - 1) {
+      _line_path_creation_animation(yGrids, ydata, v_grids_conf, post_delay, onEndObj);
+    } else {
+      _line_path_creation_animation(yGrids, ydata, v_grids_conf);
+    }
   }
 } //_animate_grid_creation
 // a method to remove the grids
@@ -16762,6 +16769,15 @@ var _remove_path_grid = function _remove_path_grid() {
 
 
 var _line_path_creation_animation = function _line_path_creation_animation(lineHolder, data, grids_conf) {
+  var post_delay = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+  var onEndObj = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
+
+  if (onEndObj) {
+    var onEndFunc = onEndObj.onEndFunc,
+        param = onEndObj.param,
+        onNextObj = onEndObj.onNextObj;
+  }
+
   var opacity = grids_conf.opacity,
       stroke_color = grids_conf.stroke_color,
       stroke_width = grids_conf.stroke_width,
@@ -16774,9 +16790,18 @@ var _line_path_creation_animation = function _line_path_creation_animation(lineH
   }).attr('stroke-dashoffset', function () {
     var pathLength = this.getTotalLength();
     return pathLength;
-  }).transition().ease(d3.easeLinear).on('start', function Linecreation() {
-    d3.active(this).transition().duration(duration).attrTween('stroke-dashoffset', line_tweenfunc).delay(delay);
-  }); // tween functions for animation:
+  }).transition().delay(delay).duration(duration).attrTween('stroke-dashoffset', line_tweenfunc).ease(d3.easeLinear).transition().delay(post_delay).on('end', function () {
+    if (onEndObj) {
+      onEndFunc.apply(void 0, _toConsumableArray(param).concat([onNextObj]));
+    }
+  }); // .on('start', function Linecreation() {
+  //   d3.active(this)
+  //     .transition()
+  //     .duration(duration)
+  //     .attrTween('stroke-dashoffset', line_tweenfunc)
+  //     .delay(delay)
+  // });
+  // tween functions for animation:
 
   function line_tweenfunc() {
     var pathLength = this.getTotalLength();
@@ -16831,7 +16856,9 @@ var _draw_vectors = function _draw_vectors(vec, xScale, yScale, svgContainer, co
 };
 
 var _vec_creation_animation = function _vec_creation_animation(vec, xScale, yScale, svgContainer, colorId) {
-  var onEndObj = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
+  var pre_delay = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 100;
+  var post_delay = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 500;
+  var onEndObj = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : null;
 
   if (onEndObj) {
     var onEndFunc = onEndObj.onEndFunc,
@@ -16845,9 +16872,10 @@ var _vec_creation_animation = function _vec_creation_animation(vec, xScale, ySca
   }).attr('stroke-dashoffset', function () {
     var pathLength = this.getTotalLength();
     return pathLength;
-  }).transition().duration(500).ease(d3.easeLinear).attrTween('stroke-dashoffset', line_tweenfunc).transition().duration(500).attrTween('marker-end', arrow_tweenfunc).transition().delay(5000).on('end', function () {
+  }).transition().duration(500).delay(pre_delay).ease(d3.easeLinear).attrTween('stroke-dashoffset', line_tweenfunc).transition().duration(500).attrTween('marker-end', arrow_tweenfunc).transition().delay(post_delay).on('end', function () {
     if (onEndObj) {
-      onEndFunc.apply(void 0, _toConsumableArray(param).concat([onNextObj]));
+      console.log('param: ', param);
+      param ? onEndFunc.apply(void 0, _toConsumableArray(param).concat([onNextObj])) : onEndFunc(null, onNextObj);
     }
   }); // tween functions for animation:
 
@@ -16902,7 +16930,9 @@ var svec_plot = function svec_plot() {
   var add_data = function add_data(vec_data) {
     var anim = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
     var auto_scale_axis = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-    var onEndObj = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+    var pre_delay = arguments.length > 3 ? arguments[3] : undefined;
+    var post_delay = arguments.length > 4 ? arguments[4] : undefined;
+    var onEndObj = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
 
     // digest new data:
     var newData = _digest_data(vec_data, self.svgContainer);
@@ -16912,12 +16942,12 @@ var svec_plot = function svec_plot() {
 
     /* 
      *   TODO: maybe use change draw function a little bit to be able to call it here!
-     *         should I remve hier or somewhere esle?
+     *         should I remove them here or somewhere esle?
      */
 
     if (auto_scale_axis) {
       // remove everything in svgContainer before redraw
-      self.svgContainer.selectAll('.vector').remove(); // self.svgContainer.selectAll('arrow')
+      self.svgContainer.selectAll('.vector').transition().duration(1000).ease(d3.easeLinear).remove(); // self.svgContainer.selectAll('arrow')
 
       var newVecs = newData.vecs;
       var newColorIds = newData.colorIds;
@@ -16942,12 +16972,12 @@ var svec_plot = function svec_plot() {
 
     if (anim) {
       for (var _i4 = 0; _i4 < vecs.length; _i4++) {
-        // check if its the last one to be done --> envoke next action 
+        // check if its the last one to be done --> evoke next action 
         // by setting onEndObj
         if (_i4 == vecs.length - 1) {
-          _vec_creation_animation(vecs[_i4], xScale, yScale, self.svgContainer, colorIds[_i4], preDelay, onEndObj);
+          _vec_creation_animation(vecs[_i4], xScale, yScale, self.svgContainer, colorIds[_i4], pre_delay, post_delay, onEndObj);
         } else {
-          _vec_creation_animation(vecs[_i4], xScale, yScale, self.svgContainer, colorIds[_i4]);
+          _vec_creation_animation(vecs[_i4], xScale, yScale, self.svgContainer, colorIds[_i4], pre_delay, 0);
         }
       } // if no animation is requried simply do it!
       // TODO: correct this by adding onEndObj here : what happens if you need to do something after _draw_vectors without animation?
@@ -16966,7 +16996,9 @@ var svec_plot = function svec_plot() {
   var draw = function draw() {
     var anim = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
     var grids = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-    var onEndObj = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+    var pre_delay = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 200;
+    var post_delay = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1000;
+    var onEndObj = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
     // configure axis, makes things ready for draw 
     self.axis_scale = _configure_axis(self.svgContainer, self.config, self.data.vecs);
     var vecs = self.data.vecs;
@@ -16984,9 +17016,9 @@ var svec_plot = function svec_plot() {
         // check if it is the last thing to be done then 
         // give next step inside onEndObj
         if (i == vecs.length - 1) {
-          _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], onEndObj);
+          _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], pre_delay, post_delay, onEndObj);
         } else {
-          _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i]);
+          _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], pre_delay, 0);
         }
       } // if no animation required: 
 
@@ -17007,21 +17039,34 @@ var svec_plot = function svec_plot() {
 
 
   var draw_grids = function draw_grids() {
-    var grid_domain = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
-      x: 100,
-      y: 100
+    var paramObj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    var onEndObj = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    // grid_domain={x:100, y:100}, h_grids_conf = {}, v_grids_conf = {}, post_delay=1000, 
+    // TODO: think about other way to manage your deflaut parameters
+    var dflt_paramObj = {
+      grid_domain: {
+        x: 100,
+        y: 100
+      },
+      h_grids_conf: {},
+      v_grids_conf: {},
+      post_delay: 4000
     };
-    var h_grids_conf = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    var v_grids_conf = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-    // digestign user config:
+    _digest_configs(dflt_paramObj, paramObj);
+
+    var grid_domain = dflt_paramObj.grid_domain;
+    var h_grids_conf = dflt_paramObj.h_grids_conf;
+    var v_grids_conf = dflt_paramObj.v_grids_conf;
+    var post_delay = dflt_paramObj.post_delay; // digesting user config:
+
     _digest_configs(self.horizontal_grids_config, h_grids_conf);
 
     _digest_configs(self.vertical_grids_cofnig, v_grids_conf);
 
     var scales = _configure_axis(self.svgContainer, self.config, null, grid_domain);
 
-    _animate_grid_creation(self.svgContainer, scales.x, scales.y, self.config, self.horizontal_grids_config, self.vertical_grids_cofnig);
+    _animate_grid_creation(self.svgContainer, scales.x, scales.y, self.config, self.horizontal_grids_config, self.vertical_grids_cofnig, post_delay, onEndObj);
 
     return this;
   };
@@ -17064,18 +17109,19 @@ var svec_plot = function svec_plot() {
       }; // to chain functions after another we use onNextObj: 
       // each onNextObj have another onNextObj inside it! 
       // thats will be used in first function to evoke next function, because the next functin 
-      // will be given onNextObj as input, it will envoke a chain of functions called after another! 
+      // will be given onNextObj as input, it will evoke a chain of functions  after another! 
 
       for (var i = 0; i < queLength - 3; i++) {
         var nextObj = {
           onEndFunc: self.methodQueue[end - (i + 1)].method,
           param: self.methodQueue[end - (i + 1)].param,
+          // ?self.methodQueue[end - (i + 1)].param : null ,
           onNextObj: onNextObj
         }; // nextObj will be onNextObj for the next function:
 
         onNextObj = nextObj;
       }
-    } // notice onNextObj has all the onNextObjs for all function callings 
+    } // notice onNextObj now has all the onNextObjs for all function callings 
 
 
     var onEndObj = {
@@ -17216,23 +17262,21 @@ var plt = (0, _svgPlot.default)();
 plt.set_svg_configs({
   svg_container_width: window.innerWidth,
   svg_container_height: window.innerHeight
-}) // .set_data(data)
+}); // .set_data(data)
 // .draw(true, true)
 // .add_data(data3, true, true)
-.set_data(data) // .draw(true, true)
+
+plt.set_data(data) // .draw(true, true, 3000, 0)
 .next({
   method: plt.draw,
-  param: [true, true]
+  param: [true, true, 1000, 2000]
+}).next({
+  method: plt.draw_grids,
+  param: null
 }).next({
   method: plt.add_data,
-  param: [data3, true, true]
-}).run(); // .draw(true)
-// .add_data(data3,true, true);
-// setTimeout(function(){ plot1.add_data(data3, true, true); }, 2000);
-// setTimeout(function(){ plot1
-//   .set_data(data)
-//   .draw(true , true)
-//   ; }, 4000);
+  param: [data3, true, true, 2000, 3000]
+}).run(); // plt.draw_grids({})
 },{"./svgVector":"svgVector.js","./svgPlot":"svgPlot.js","d3":"../node_modules/d3/build/d3.js","./index.scss":"index.scss"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -17261,7 +17305,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53018" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54844" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
