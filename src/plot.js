@@ -20,7 +20,9 @@ var _configure_svg_container= util._configure_svg_container;
 var _digest_data= util._digest_data;
 
 import axis from './axis.js';
-var _configure_axis = axis._configure_axis;
+var _configure_axis_scales = axis._configure_axis_scales,
+    _axisTransitions = axis._axisTransitions;
+
 //var _calculate_domain=axis._calculate_domain;
 
 import path from './path.js';
@@ -113,7 +115,7 @@ self.added_data;
         }
         vecs = self.data.vecs;
         colorIds = self.data.colorIds;
-        self.axis_scale = _configure_axis( self.svgContainer, self.config, vecs);
+        self.axis_scale = _configure_axis_scales( self.svgContainer, self.config, vecs);
         xScale = self.axis_scale.x;
         yScale = self.axis_scale.y;
   
@@ -160,36 +162,70 @@ self.added_data;
     var draw = (anim = false, grids = true, pre_delay=200, post_delay=1000, onEndObj=null)=> {
   
       // configure axis, makes things ready for draw 
-      self.axis_scale = _configure_axis( self.svgContainer, self.config, self.data.vecs);
-      let vecs = self.data.vecs;
-      let colorIds = self.data.colorIds;
-      let xScale = self.axis_scale.x;
-      let yScale = self.axis_scale.y;
-  
-      if (grids) {
-        _create_path_grid(self.svgContainer, xScale, yScale, self.config);
-      }
+      self.axis_scale = _configure_axis_scales( self.svgContainer, self.config, self.data.vecs);
+      let vecs = self.data.vecs,
+          colorIds = self.data.colorIds,
+          xScale = self.axis_scale.x,
+          yScale = self.axis_scale.y,
+          svgContainer= self.svgContainer,
+          h_grids_conf= self.horizontal_grids_config,
+          v_grids_conf= self.vertical_grids_cofnig;
+
+      // axixTrans is just a Promise we use all this promises to manage the sequence of drawing components at the end of the function
+      let axisTrans =_axisTransitions(svgContainer, xScale, yScale),
+          xAxisTrans_promise= axisTrans.x,
+          yAxisTrans_promise= axisTrans.y;
+
+           
+      var grids_promises = _animate_grid_creation(svgContainer,xScale, yScale, self.config, h_grids_conf, v_grids_conf );
+
+      // var old_grids_remove_promis = grids_promises.old_grids_remove_promis,
+      //     xGrid_promise_list = grids_promises.xGrid_promise_list,
+      //     yGrid_promise_list = grids_promises.yGrid_promise_list;
+
+      // var grids_promises_func_lis=[];
+    
+      // xGrid_promise_list.forEach((item)=>{
+      //   grids_promises_func_lis.push(item())
+      // })
+      // yGrid_promise_list.forEach((item)=>{
+      //   grids_promises_func_lis.push(item())
+      // })
+    
+
+
+      // Promise.all([xAxisTrans_promise(), yAxisTrans_promise()])
+      // .then(old_grids_remove_promis())
+      // .then(Promise.all(grids_promises_func_lis))
+
+
+
+
+
+      // if (grids) {
+      //   _create_path_grid(svgContainer, xScale, yScale, self.config);
+      // }
       
-      // if animation required:
-      if (anim) {
-        for (let i = 0; i < vecs.length; i++) {
+      // // if animation required:
+      // if (anim) {
+      //   for (let i = 0; i < vecs.length; i++) {
   
-          // check if it is the last thing to be done then 
-          // give next step inside onEndObj
-          if (i== vecs.length-1){
-          _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], pre_delay, post_delay, onEndObj);
-          }
-          else{
-            _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], pre_delay, 0);
-          }
-        }
+      //     // check if it is the last thing to be done then 
+      //     // give next step inside onEndObj
+      //     if (i== vecs.length-1){
+      //     _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], pre_delay, post_delay, onEndObj);
+      //     }
+      //     else{
+      //       _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], pre_delay, 0);
+      //     }
+      //   }
   
-      // if no animation required: 
-      } else {
-        for (let i = 0; i < vecs.length; i++) {
-          _draw_vectors(vecs[i], xScale, yScale, self.svgContainer, colorIds[i]);
-        }
-      }
+      // // if no animation required: 
+      // } else {
+      //   for (let i = 0; i < vecs.length; i++) {
+      //     _draw_vectors(vecs[i], xScale, yScale, self.svgContainer, colorIds[i]);
+      //   }
+      // }
       return this
     }
   
@@ -212,15 +248,15 @@ self.added_data;
       _digest_configs(dflt_paramObj,paramObj)
   
       var grid_domain = dflt_paramObj.grid_domain
-      var h_grids_conf=dflt_paramObj.h_grids_conf
-      var v_grids_conf=dflt_paramObj.v_grids_conf
-      var post_delay= dflt_paramObj.post_delay
+      var h_grids_conf = dflt_paramObj.h_grids_conf
+      var v_grids_conf = dflt_paramObj.v_grids_conf
+      var post_delay = dflt_paramObj.post_delay
       
       // digesting user config:
       _digest_configs(self.horizontal_grids_config, h_grids_conf);
       _digest_configs(self.vertical_grids_cofnig, v_grids_conf);
   
-      let scales = _configure_axis(self.svgContainer, self.config, null, grid_domain);
+      let scales = _configure_axis_scales(self.svgContainer, self.config, null, grid_domain);
   
   
       _animate_grid_creation(self.svgContainer, scales.x, scales.y, self.config, self.horizontal_grids_config, self.vertical_grids_cofnig, post_delay, onEndObj)

@@ -16446,41 +16446,28 @@ var d3 = _interopRequireWildcard(require("d3"));
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-var SVector =
-/*#__PURE__*/
-function () {
+// svg Vector class
+class SVector {
   // cosntructor method:         
-  function SVector(x, y) {
-    _classCallCheck(this, SVector);
-
+  constructor(x, y) {
     this.x = x;
     this.y = y;
     this.value = [x, y];
   } //add method
 
 
-  _createClass(SVector, [{
-    key: "add",
-    value: function add(vec) {
-      if (!(vec instanceof SVector)) {
-        throw new TypeError("both vectors should be an instance of SVector!");
-      } else {
-        var x = this.x + vec.x;
-        var y = this.y + vec.y;
-      }
-
-      return new SVector(x, y);
+  add(vec) {
+    if (!(vec instanceof SVector)) {
+      throw new TypeError("both vectors should be an instance of SVector!");
+    } else {
+      var x = this.x + vec.x;
+      var y = this.y + vec.y;
     }
-  }]);
 
-  return SVector;
-}();
+    return new SVector(x, y);
+  }
+
+}
 
 exports.default = SVector;
 },{"d3":"../node_modules/d3/build/d3.js"}],"defaults.js":[function(require,module,exports) {
@@ -16491,7 +16478,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 // default svg config
-var dflt_svg_conf = {
+const dflt_svg_conf = {
   svgContainerId: 'svgVecContainer',
   svg_container_width: 900,
   svg_container_height: 900,
@@ -16500,7 +16487,7 @@ var dflt_svg_conf = {
     y: 50
   }
 };
-var dflt_h_grid_conf = {
+const dflt_h_grid_conf = {
   opacity: 0.5,
   stroke_color: '#bbbbbb',
   stroke_width: '1.5px',
@@ -16508,7 +16495,7 @@ var dflt_h_grid_conf = {
   delay: 10,
   className: 'originalxGrids'
 };
-var dflt_v_grid_conf = {
+const dflt_v_grid_conf = {
   opacity: 0.5,
   stroke_color: '#808080',
   stroke_width: '1.5px',
@@ -16542,10 +16529,10 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 */
 // imports:
 // digest new  configs: 
-var _digest_configs = function _digest_configs(dflt_config, new_config) {
-  for (var key in new_config) {
+var _digest_configs = function (dflt_config, new_config) {
+  for (let key in new_config) {
     if (!dflt_config.hasOwnProperty(key)) {
-      throw new Error("Invalid key: ".concat(key, " "));
+      throw new Error(`Invalid key: ${key} `);
     } else {
       Object.defineProperty(dflt_config, key, {
         value: new_config[key]
@@ -16555,14 +16542,14 @@ var _digest_configs = function _digest_configs(dflt_config, new_config) {
 }; // configuration method for svg_containers
 
 
-var _configure_svg_container = function _configure_svg_container(self) {
-  var svgContainerId = self.config.svgContainerId;
-  var selected = d3.select("#".concat(svgContainerId));
+var _configure_svg_container = function (self) {
+  let svgContainerId = self.config.svgContainerId;
+  let selected = d3.select(`#${svgContainerId}`);
   var svgContainer; // see if there is any container with the same id already exist
   // if not create one
 
   if (selected._groups[0][0] == null) {
-    svgContainer = d3.select('body').append('svg').attr('width', self.config.svg_container_width).attr('height', self.config.svg_container_height).attr('id', "".concat(svgContainerId));
+    svgContainer = d3.select('body').append('svg').attr('width', self.config.svg_container_width).attr('height', self.config.svg_container_height).attr('id', `${svgContainerId}`);
   } else {
     svgContainer = selected;
   } // create a blue print for axis so that it can be configured later using select!
@@ -16584,10 +16571,10 @@ var _configure_svg_container = function _configure_svg_container(self) {
 */
 
 
-var _configure_defs = function _configure_defs(svgContainer, arrowId) {
-  if (d3.select("#arrowhead".concat(arrowId))._groups[0][0] == null) {
+var _configure_defs = function (svgContainer, arrowId) {
+  if (d3.select(`#arrowhead${arrowId}`)._groups[0][0] == null) {
     var defs = svgContainer.append('svg:defs');
-    defs.append('svg:marker').attr('id', "arrowhead".concat(arrowId)).attr('viewBox', '0 0 12 12').attr('refX', 11.5).attr('refY', 6).attr('markerWidth', 10).attr('markerHeight', 10).attr('orient', 'auto').append('path').attr('d', 'M 0 0 12 6 0 12 3 6').style('fill', "#".concat(arrowId));
+    defs.append('svg:marker').attr('id', `arrowhead${arrowId}`).attr('viewBox', '0 0 12 12').attr('refX', 11.5).attr('refY', 6).attr('markerWidth', 10).attr('markerHeight', 10).attr('orient', 'auto').append('path').attr('d', 'M 0 0 12 6 0 12 3 6').style('fill', `#${arrowId}`);
   }
 
   return defs;
@@ -16601,7 +16588,7 @@ var _configure_defs = function _configure_defs(svgContainer, arrowId) {
 */
 
 
-var _digest_data = function _digest_data(data, svgContainer) {
+var _digest_data = function (data, svgContainer) {
   // set vecs and default colors
   var colors;
   var vecs;
@@ -16617,7 +16604,7 @@ var _digest_data = function _digest_data(data, svgContainer) {
   } else {
     colors = [];
 
-    for (var i = 0; i < vecs.length; i++) {
+    for (let i = 0; i < vecs.length; i++) {
       colors.push('#1DA1F2');
     }
   }
@@ -16626,15 +16613,15 @@ var _digest_data = function _digest_data(data, svgContainer) {
   dif = vecs.length - colors.length;
 
   if (dif > 0) {
-    for (var _i = 0; _i < dif; _i++) {
+    for (let i = 0; i < dif; i++) {
       colors.push('#1DA1F2');
     }
   } // configure colorIds for defs
 
 
   var colorIds = [];
-  colors.forEach(function (color) {
-    var colorId = color.split('#')[1];
+  colors.forEach(color => {
+    let colorId = color.split('#')[1];
     colorIds.push(colorId);
 
     _configure_defs(svgContainer, colorId);
@@ -16670,34 +16657,51 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 // configure axis: 
 
 /* //TODO: add presets here for different types of transition 
+*  // TODO: add axisId for multiple axis support?
   
 */
-var _configure_axis = function _configure_axis(svgContainer, svg_config) {
-  var vecs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-  var grid_domain = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-  var svg_width = svg_config.svg_container_width;
-  var svg_height = svg_config.svg_container_height;
-  var margin = svg_config.svg_margin;
+var _configure_axis_scales = function (svgContainer, svg_config, vecs = null, grid_domain = null) {
+  let svg_width = svg_config.svg_container_width;
+  let svg_height = svg_config.svg_container_height;
+  let margin = svg_config.svg_margin;
   var domain = {};
   vecs ? domain = _calculate_domain(vecs) : domain = grid_domain;
-  var xScale = d3.scaleLinear().domain([-domain.x, domain.x]).range([0 + margin.x, svg_width - margin.x]);
-  var yScale = d3.scaleLinear().domain([domain.y, -domain.y]).range([0 + margin.y, svg_height - margin.y]); // add x Axis
-
-  svgContainer.select('.xAxis').attr("transform", "translate(" + 0 + "," + yScale(0) + ")").transition().duration(1000).delay(1500).ease(d3.easeLinear).call(d3.axisBottom(xScale)); // Add the y Axis
-
-  svgContainer.select('.yAxis').attr("transform", "translate(" + xScale(0) + "," + 0 + ")").transition().duration(1000).delay(500).ease(d3.easeLinear).call(d3.axisLeft(yScale));
-  var axis_scale = {
+  let xScale = d3.scaleLinear().domain([-domain.x, domain.x]).range([0 + margin.x, svg_width - margin.x]);
+  let yScale = d3.scaleLinear().domain([domain.y, -domain.y]).range([0 + margin.y, svg_height - margin.y]);
+  let axis_scale = {
     x: xScale,
     y: yScale
-  }; // _createGrid(svgContainer, xScale, yScale, svg_config);
-  // _update_grid(svgContainer, xScale, yScale, config)
-  // _animate_grid_creation(svgContainer, xScale, yScale, config)
-
+  };
   return axis_scale;
+};
+
+var _axisTransitions = function (svgContainer, xScale, yScale) {
+  // add x and y Axis
+  const xAxis = svgContainer.select('.xAxis'),
+        yAxis = svgContainer.select('.yAxis'); // axis transitions      
+
+  const xAxisTransition = () => {
+    new Promise((resolve, reject) => {
+      xAxis.attr("transform", "translate(" + 0 + "," + yScale(0) + ")").transition().duration(1000).delay(1500).ease(d3.easeLinear).call(d3.axisBottom(xScale)).on('end', resolve);
+    });
+  }; // Add the y Axis
+
+
+  const yAxisTransition = () => {
+    return new Promise((resolve, reject) => {
+      yAxis.attr("transform", "translate(" + xScale(0) + "," + 0 + ")").transition().duration(1000).delay(500).ease(d3.easeLinear).call(d3.axisLeft(yScale)).on('end', resolve);
+    });
+  };
+
+  let axis_trans = {
+    x: xAxisTransition,
+    y: yAxisTransition
+  };
+  return axis_trans;
 }; // calculate domain:
 
 
-var _calculate_domain = function _calculate_domain(vecs) {
+var _calculate_domain = function (vecs) {
   /*
    * calculates domain to be used by d3.scale 
    * //TODO: see if you can do better paddings
@@ -16706,20 +16710,20 @@ var _calculate_domain = function _calculate_domain(vecs) {
    */
   var xComponents = [];
   var yComponents = [];
-  vecs.forEach(function (element) {
+  vecs.forEach(element => {
     xComponents.push(element.x);
     yComponents.push(element.y);
   });
-  var maxX = d3.max(xComponents);
-  var minX = d3.min(xComponents);
-  var domainX = d3.max([maxX, Math.abs(minX)]);
+  let maxX = d3.max(xComponents);
+  let minX = d3.min(xComponents);
+  let domainX = d3.max([maxX, Math.abs(minX)]);
   domainX += domainX * .2;
-  var maxY = d3.max(yComponents);
-  var minY = d3.min(yComponents);
-  var domainY = d3.max([maxY, Math.abs(minY)]);
+  let maxY = d3.max(yComponents);
+  let minY = d3.min(yComponents);
+  let domainY = d3.max([maxY, Math.abs(minY)]);
   domainY += domainY * .2; // let domain = d3.max([d3.max(xComponents), d3.max(xComponents)]);
 
-  var domain = {
+  let domain = {
     x: domainX,
     y: domainY
   };
@@ -16727,7 +16731,8 @@ var _calculate_domain = function _calculate_domain(vecs) {
 };
 
 var axis = {
-  _configure_axis: _configure_axis,
+  _configure_axis_scales: _configure_axis_scales,
+  _axisTransitions: _axisTransitions,
   _calculate_domain: _calculate_domain
 };
 var _default = axis;
@@ -16744,18 +16749,10 @@ var d3 = _interopRequireWildcard(require("d3"));
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
-
 // update function with path instead of line ( it can be usefull if you want to transform path to another!)
 // TODO: add animation creation 
-var _create_path_grid = function _create_path_grid(svgContainer, xScale, yScale, config) {
-  _remove_path_grid();
+var _create_path_grid = function (svgContainer, xScale, yScale, config) {
+  var old_grids_remove_promis = _remove_path_grid();
 
   var width = config.svg_container_width,
       height = config.svg_container_height,
@@ -16773,7 +16770,7 @@ var _create_path_grid = function _create_path_grid(svgContainer, xScale, yScale,
 
   var xPathData = [];
 
-  for (var i = 0; i < xData.length; i++) {
+  for (let i = 0; i < xData.length; i++) {
     xPathData = [[margin.x, yScale(xData[i])], [width - margin.x, yScale(xData[i])]];
     originalxGrids.append('path').attr('class', 'originalxGrids').attr('d', lineGenerator(xPathData)).attr('stroke', '#bbbbbb').attr('stroke-width', '0px').style('fill', 'none').style('opacity', .5).style('shape-rendering', 'crispEdges').transition().duration(500).ease(d3.easeCircle).attr('stroke-width', '1.5px');
   } // vertical grids
@@ -16783,60 +16780,95 @@ var _create_path_grid = function _create_path_grid(svgContainer, xScale, yScale,
 
   var yPathData = [];
 
-  for (var _i = 0; _i < yData.length; _i++) {
-    yPathData = [[xScale(yData[_i]), margin.y], [xScale(yData[_i]), height - margin.y]];
+  for (let i = 0; i < yData.length; i++) {
+    yPathData = [[xScale(yData[i]), margin.y], [xScale(yData[i]), height - margin.y]];
     originalyGrids.append('path').attr('class', 'originalyGrids').attr('d', lineGenerator(yPathData)).attr('stroke', '#808080').attr('stroke-width', '0px').style('fill', 'none').style('opacity', .5).style('shape-rendering', 'crispEdges').transition().duration(500).ease(d3.easeCircle).attr('stroke-width', '1.5px');
   }
 };
 
-var _animate_grid_creation = function _animate_grid_creation(svgContainer, xScale, yScale, config, h_grids_conf, v_grids_conf) {
-  var post_delay = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 0;
-  var onEndObj = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : null;
-
+var _animate_grid_creation = function (svgContainer, xScale, yScale, config, h_grids_conf, v_grids_conf) {
   // remove existing grids
   // TODO: do you need animation for removing?
-  _remove_path_grid(); // creatte new ones :
+  // remove old grids
+  var old_grids_remove_promis = _remove_path_grid(); // creatte new ones :
 
 
   var width = config.svg_container_width,
       height = config.svg_container_height,
       margin = config.svg_margin,
       xData = yScale.ticks(10),
-      yData = xScale.ticks(10); // create horizontal grids                 
+      yData = xScale.ticks(10); // create horizontal grids    
 
-  var xGrids = svgContainer.select('.xGrids').append('g');
+  var xGrid_promise_list = [];
+  let xGridGroup = svgContainer.select('.xGrids').append('g');
 
-  for (var i = 0; i < xData.length; i++) {
+  for (let i = 0; i < xData.length; i++) {
     // set new data
-    var xdata = [[margin.x, yScale(xData[i])], [width - margin.x, yScale(xData[i])]]; // animate line
+    let xdata = [[margin.x, yScale(xData[i])], [width - margin.x, yScale(xData[i])]]; // animate line
 
-    _line_path_creation_animation(xGrids, xdata, h_grids_conf);
+    xGrid_promise_list.push(_line_path_creation_animation(xGridGroup, xdata, h_grids_conf));
   } //vertical grids
-  // TODO: change orignalxGrids to xGrids and yGrids the class will be changed automatically!
 
 
-  var yGrids = svgContainer.select('.yGrids').append('g');
+  var yGrid_promise_list = [];
+  var yGridGroup = svgContainer.select('.yGrids').append('g');
 
-  for (var _i2 = 0; _i2 < yData.length; _i2++) {
+  for (let i = 0; i < yData.length; i++) {
     // set new data:
-    var ydata = [[xScale(yData[_i2]), margin.y], [xScale(yData[_i2]), height - margin.y]];
+    let ydata = [[xScale(yData[i]), margin.y], [xScale(yData[i]), height - margin.y]];
+    yGrid_promise_list.push(_line_path_creation_animation(yGridGroup, ydata, v_grids_conf));
+  }
 
-    if (_i2 == yData.length - 1) {
-      _line_path_creation_animation(yGrids, ydata, v_grids_conf, post_delay, onEndObj);
-    } else {
-      _line_path_creation_animation(yGrids, ydata, v_grids_conf);
+  var all_xpromises = [];
+  var all_ypromises = [];
+  xGrid_promise_list.forEach(item => {
+    all_xpromises.push(item());
+  });
+  yGrid_promise_list.forEach(item => {
+    all_ypromises.push(item());
+  });
+
+  async function run() {
+    for (let i = 0; i < all_ypromises.length; i++) {
+      await Promise.all(all_xpromises);
+      await Promise.all(all_ypromises);
     }
   }
+
+  run(); // run(yGrid_promise_list)
+  // run(xGrid_promise_list)
+  //Promise.all([xGrid_promise_list[3](), xGrid_promise_list[4]()])
+  // .then(()=>{
+  //   Promise.resolve(xGrid_promise_list[3])
+  // })
+
+  let animate_grids_promises = {
+    old_grids_remove_promis: old_grids_remove_promis,
+    xGrid_promise_list: xGrid_promise_list,
+    yGrid_promise_list: yGrid_promise_list
+  };
+  return animate_grids_promises;
 }; //_animate_grid_creation
 // a method to remove the grids
 
 
-var _remove_path_grid = function _remove_path_grid() {
-  d3.select('.xGrids').selectAll('path.originalxGrids').remove();
-  d3.select('.yGrids').selectAll('path.originalyGrids').remove();
+var _remove_path_grid = function (xGidsCl, yGridsCl) {
+  xGidsCl = xGidsCl || '.originalxGrids';
+  yGridsCl = yGridsCl || '.originalyGrids';
+  var xGrids = d3.select('.xGrids').selectAll(xGidsCl);
+  var yGrids = d3.select('.yGrids').selectAll(yGridsCl);
+
+  var remove_grids_promise = () => {
+    return new Promise((resolve, reject) => {
+      xGrids.transition().duration(100).remove();
+      yGrids.transition().duration(100).remove().on('end', resolve);
+    });
+  };
+
+  return remove_grids_promise;
 };
 /*
- * @param{obj}: {lineHolder,
+ * @param{obj}: {lineGroup,
  *               data  ,
  *               opacity ,
  *               stroke_color,
@@ -16846,92 +16878,83 @@ var _remove_path_grid = function _remove_path_grid() {
  *               className }
  * className--> is important for the time if you want to change attributes of this grids or 
  *              remove them without changing other girids!
- * 
+ * // TODO: merge all these line making promises togheter in just one promise!
  */
 
 
-var _line_path_creation_animation = function _line_path_creation_animation(lineHolder, data, grids_conf) {
-  var post_delay = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
-  var onEndObj = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
-
-  if (onEndObj) {
-    var onEndFunc = onEndObj.onEndFunc,
-        param = onEndObj.param,
-        onNextObj = onEndObj.onNextObj;
-  }
-
+var _line_path_creation_animation = function (lineGroup, data, grids_conf, post_delay = 0) {
   var opacity = grids_conf.opacity,
       stroke_color = grids_conf.stroke_color,
       stroke_width = grids_conf.stroke_width,
       duration = grids_conf.duration,
       delay = grids_conf.delay,
-      className = grids_conf.className;
-  lineHolder.append('path').attr('class', className).attr('d', lineGenerator(data)).attr('stroke', stroke_color).attr('stroke-width', stroke_width).style('fill', 'none').style('opacity', opacity).style('shape-rendering', 'crispEdges').attr('stroke-dasharray', function () {
-    var pathLength = this.getTotalLength();
-    return pathLength;
-  }).attr('stroke-dashoffset', function () {
-    var pathLength = this.getTotalLength();
-    return pathLength;
-  }).transition().delay(delay).duration(duration).attrTween('stroke-dashoffset', line_tweenfunc).ease(d3.easeLinear).transition().delay(post_delay).on('end', function () {
-    if (onEndObj) {
-      onEndFunc.apply(void 0, _toConsumableArray(param).concat([onNextObj]));
-    }
+      className = grids_conf.className; // create line generator 
+
+  var lineGenerator = d3.line().x(function (d) {
+    return d[0];
+  }).y(function (d) {
+    return d[1];
   });
+  var linePath = lineGroup.append('path').attr('class', className).attr('stroke', stroke_color).attr('stroke-width', stroke_width).style('fill', 'none').style('opacity', opacity);
 
-  function line_tweenfunc() {
-    var pathLength = this.getTotalLength();
-    return d3.interpolateNumber(pathLength, 0);
-  }
-}; // create line generator 
+  var line_path_creation_promis = () => {
+    return new Promise((resolve, reject) => {
+      linePath.attr('d', lineGenerator(data)).style('shape-rendering', 'crispEdges').attr('stroke-dasharray', function () {
+        let pathLength = this.getTotalLength();
+        return pathLength;
+      }).attr('stroke-dashoffset', function () {
+        let pathLength = this.getTotalLength();
+        return pathLength;
+      }).transition().delay(delay).duration(duration).attrTween('stroke-dashoffset', line_tweenfunc).ease(d3.easeLinear).transition().delay(post_delay).on('end', resolve);
+
+      function line_tweenfunc() {
+        let pathLength = this.getTotalLength();
+        return d3.interpolateNumber(pathLength, 0);
+      }
+    });
+  };
+
+  return line_path_creation_promis;
+}; // draw vectors:
 
 
-var lineGenerator = d3.line().x(function (d) {
-  return d[0];
-}).y(function (d) {
-  return d[1];
-}); // draw vectors:
-
-var _draw_vectors = function _draw_vectors(vec, xScale, yScale, svgContainer, colorId) {
+var _draw_vectors = function (vec, xScale, yScale, svgContainer, colorId) {
   // animate drawing 
   // draw without animating 
-  svgContainer.append('line').attr('x1', xScale(0)).attr('y1', yScale(0)).attr('x2', xScale(vec.x)).attr('y2', yScale(vec.y)).attr('stroke-width', 1.5).attr('class', 'vector').attr("stroke", "#".concat(colorId)).attr('marker-end', "url(#arrowhead".concat(colorId, ")"));
+  svgContainer.append('line').attr('x1', xScale(0)).attr('y1', yScale(0)).attr('x2', xScale(vec.x)).attr('y2', yScale(vec.y)).attr('stroke-width', 1.5).attr('class', 'vector').attr("stroke", `#${colorId}`).attr('marker-end', `url(#arrowhead${colorId})`);
 };
 
-var _vec_creation_animation = function _vec_creation_animation(vec, xScale, yScale, svgContainer, colorId) {
-  var pre_delay = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 100;
-  var post_delay = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 500;
-  var onEndObj = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : null;
-
+var _vec_creation_animation = function (vec, xScale, yScale, svgContainer, colorId, pre_delay = 100, post_delay = 500, onEndObj = null) {
   if (onEndObj) {
     var onEndFunc = onEndObj.onEndFunc,
         param = onEndObj.param,
         onNextObj = onEndObj.onNextObj;
   }
 
-  svgContainer.append('line').attr('x1', xScale(0)).attr('y1', yScale(0)).attr('x2', xScale(vec.x)).attr('y2', yScale(vec.y)).attr('class', 'vector').attr("stroke", "#".concat(colorId)).attr('stroke-width', 1.5).attr('stroke-dasharray', function () {
-    var pathLength = this.getTotalLength();
+  svgContainer.append('line').attr('x1', xScale(0)).attr('y1', yScale(0)).attr('x2', xScale(vec.x)).attr('y2', yScale(vec.y)).attr('class', 'vector').attr("stroke", `#${colorId}`).attr('stroke-width', 1.5).attr('stroke-dasharray', function () {
+    let pathLength = this.getTotalLength();
     return pathLength;
   }).attr('stroke-dashoffset', function () {
-    var pathLength = this.getTotalLength();
+    let pathLength = this.getTotalLength();
     return pathLength;
   }).transition().duration(500).delay(pre_delay).ease(d3.easeLinear).attrTween('stroke-dashoffset', line_tweenfunc).transition().duration(500).attrTween('marker-end', arrow_tweenfunc).transition().delay(post_delay).on('end', function () {
     if (onEndObj) {
-      param ? onEndFunc.apply(void 0, _toConsumableArray(param).concat([onNextObj])) : onEndFunc(null, onNextObj);
+      param ? onEndFunc(...param, onNextObj) : onEndFunc(null, onNextObj);
     }
   }); // tween functions for animation:
 
   function line_tweenfunc() {
-    var pathLength = this.getTotalLength();
+    let pathLength = this.getTotalLength();
     return d3.interpolateNumber(pathLength, 0);
   }
 
   function arrow_tweenfunc() {
-    var a = d3.interpolateNumber(0, 12);
+    let a = d3.interpolateNumber(0, 12);
     return function (t) {
-      var b = a(t);
-      var triangleData = "M 0 0 ".concat(b, " 6 0 ").concat(b, " 3 6");
-      d3.select("#arrowhead".concat(colorId)).attr('d', triangleData);
-      return "url(#arrowhead".concat(colorId, ")");
+      let b = a(t);
+      let triangleData = `M 0 0 ${b} 6 0 ${b} 3 6`;
+      d3.select(`#arrowhead${colorId}`).attr('d', triangleData);
+      return `url(#arrowhead${colorId})`;
     };
   }
 };
@@ -16963,20 +16986,15 @@ var _axis = _interopRequireDefault(require("./axis.js"));
 
 var _path = _interopRequireDefault(require("./path.js"));
 
-var _this = void 0;
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
-
+/* 
+* animates vectors and vectorfields 
+*
+*/
+// imports:
 var dflt_svg_conf = _defaults.default.dflt_svg_conf;
 var dflt_h_grid_conf = _defaults.default.dflt_h_grid_conf;
 var dflt_v_grid_conf = _defaults.default.dflt_v_grid_conf;
@@ -16984,7 +17002,8 @@ var _digest_configs = _util.default._digest_configs;
 var _configure_svg_container = _util.default._configure_svg_container; //var _configure_defs= util._configure_defs;
 
 var _digest_data = _util.default._digest_data;
-var _configure_axis = _axis.default._configure_axis; //var _calculate_domain=axis._calculate_domain;
+var _configure_axis_scales = _axis.default._configure_axis_scales,
+    _axisTransitions = _axis.default._axisTransitions; //var _calculate_domain=axis._calculate_domain;
 
 var _create_path_grid = _path.default._create_path_grid,
     _animate_grid_creation = _path.default._animate_grid_creation,
@@ -17007,9 +17026,9 @@ self.added_data;
  * can be used with method chainging 
  */
 
-var plot = function plot() {
+const plot = () => {
   //configure svg configs 
-  var set_svg_configs = function set_svg_configs(svg_conf) {
+  var set_svg_configs = function (svg_conf) {
     _digest_configs(self.config, svg_conf);
 
     self.svgContainer = _configure_svg_container(self);
@@ -17017,7 +17036,7 @@ var plot = function plot() {
   }; // set data and colors
 
 
-  var set_data = function set_data(vec_data) {
+  var set_data = function (vec_data) {
     if (self.data) {
       throw new Error('to add data you should use add_data method!');
     }
@@ -17034,13 +17053,7 @@ var plot = function plot() {
    */
 
 
-  var add_data = function add_data(vec_data) {
-    var anim = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-    var auto_scale_axis = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-    var pre_delay = arguments.length > 3 ? arguments[3] : undefined;
-    var post_delay = arguments.length > 4 ? arguments[4] : undefined;
-    var onEndObj = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
-
+  var add_data = (vec_data, anim = false, auto_scale_axis = false, pre_delay, post_delay, onEndObj = null) => {
     // digest new data:
     var newData = _digest_data(vec_data, self.svgContainer);
 
@@ -17056,86 +17069,102 @@ var plot = function plot() {
       // remove everything in svgContainer before redraw
       self.svgContainer.selectAll('.vector').transition().duration(1000).ease(d3.easeLinear).remove(); // self.svgContainer.selectAll('arrow')
 
-      var newVecs = newData.vecs;
-      var newColorIds = newData.colorIds;
+      let newVecs = newData.vecs;
+      let newColorIds = newData.colorIds;
 
-      for (var i = 0; i < newVecs.length; i++) {
+      for (let i = 0; i < newVecs.length; i++) {
         self.data.vecs.push(newVecs[i]);
         self.data.colorIds.push(newColorIds[i]);
       }
 
       vecs = self.data.vecs;
       colorIds = self.data.colorIds;
-      self.axis_scale = _configure_axis(self.svgContainer, self.config, vecs);
+      self.axis_scale = _configure_axis_scales(self.svgContainer, self.config, vecs);
       xScale = self.axis_scale.x;
       yScale = self.axis_scale.y;
     } else {
       self.data_count += 1;
       self.added_data = {};
       vecs = newData.vecs, colorIds = newData.colorIds, xScale = self.axis_scale.x, yScale = self.axis_scale.y;
-      self.added_data["d".concat(self.data_count)] = newData;
+      self.added_data[`d${self.data_count}`] = newData;
     } // use new data to draw vectors
 
 
     if (anim) {
-      for (var _i = 0; _i < vecs.length; _i++) {
+      for (let i = 0; i < vecs.length; i++) {
         // check if its the last one to be done --> evoke next action 
         // by setting onEndObj
-        if (_i == vecs.length - 1) {
-          _vec_creation_animation(vecs[_i], xScale, yScale, self.svgContainer, colorIds[_i], pre_delay, post_delay, onEndObj);
-        } else {
-          _vec_creation_animation(vecs[_i], xScale, yScale, self.svgContainer, colorIds[_i], pre_delay, 0);
-        }
-      } // if no animation is requried simply do it!
-      // TODO: correct this by adding onEndObj here : what happens if you need to do something after _draw_vectors without animation?
-
-    } else {
-      for (var _i2 = 0; _i2 < vecs.length; _i2++) {
-        _draw_vectors(vecs[_i2], xScale, yScale, self.svgContainer, colorIds[_i2]);
-      }
-    }
-
-    return _this;
-  }; // draw vectors
-  //TODO: give grid_configs (strokes, color, opacity etc) from user?
-
-
-  var draw = function draw() {
-    var anim = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-    var grids = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-    var pre_delay = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 200;
-    var post_delay = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1000;
-    var onEndObj = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
-    // configure axis, makes things ready for draw 
-    self.axis_scale = _configure_axis(self.svgContainer, self.config, self.data.vecs);
-    var vecs = self.data.vecs;
-    var colorIds = self.data.colorIds;
-    var xScale = self.axis_scale.x;
-    var yScale = self.axis_scale.y;
-
-    if (grids) {
-      _create_path_grid(self.svgContainer, xScale, yScale, self.config);
-    } // if animation required:
-
-
-    if (anim) {
-      for (var i = 0; i < vecs.length; i++) {
-        // check if it is the last thing to be done then 
-        // give next step inside onEndObj
         if (i == vecs.length - 1) {
           _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], pre_delay, post_delay, onEndObj);
         } else {
           _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], pre_delay, 0);
         }
-      } // if no animation required: 
+      } // if no animation is requried simply do it!
+      // TODO: correct this by adding onEndObj here : what happens if you need to do something after _draw_vectors without animation?
 
     } else {
-      for (var _i3 = 0; _i3 < vecs.length; _i3++) {
-        _draw_vectors(vecs[_i3], xScale, yScale, self.svgContainer, colorIds[_i3]);
+      for (let i = 0; i < vecs.length; i++) {
+        _draw_vectors(vecs[i], xScale, yScale, self.svgContainer, colorIds[i]);
       }
     }
 
-    return _this;
+    return void 0;
+  }; // draw vectors
+  //TODO: give grid_configs (strokes, color, opacity etc) from user?
+
+
+  var draw = (anim = false, grids = true, pre_delay = 200, post_delay = 1000, onEndObj = null) => {
+    // configure axis, makes things ready for draw 
+    self.axis_scale = _configure_axis_scales(self.svgContainer, self.config, self.data.vecs);
+    let vecs = self.data.vecs,
+        colorIds = self.data.colorIds,
+        xScale = self.axis_scale.x,
+        yScale = self.axis_scale.y,
+        svgContainer = self.svgContainer,
+        h_grids_conf = self.horizontal_grids_config,
+        v_grids_conf = self.vertical_grids_cofnig; // axixTrans is just a Promise we use all this promises to manage the sequence of drawing components at the end of the function
+
+    let axisTrans = _axisTransitions(svgContainer, xScale, yScale),
+        xAxisTrans_promise = axisTrans.x,
+        yAxisTrans_promise = axisTrans.y;
+
+    var grids_promises = _animate_grid_creation(svgContainer, xScale, yScale, self.config, h_grids_conf, v_grids_conf); // var old_grids_remove_promis = grids_promises.old_grids_remove_promis,
+    //     xGrid_promise_list = grids_promises.xGrid_promise_list,
+    //     yGrid_promise_list = grids_promises.yGrid_promise_list;
+    // var grids_promises_func_lis=[];
+    // xGrid_promise_list.forEach((item)=>{
+    //   grids_promises_func_lis.push(item())
+    // })
+    // yGrid_promise_list.forEach((item)=>{
+    //   grids_promises_func_lis.push(item())
+    // })
+    // Promise.all([xAxisTrans_promise(), yAxisTrans_promise()])
+    // .then(old_grids_remove_promis())
+    // .then(Promise.all(grids_promises_func_lis))
+    // if (grids) {
+    //   _create_path_grid(svgContainer, xScale, yScale, self.config);
+    // }
+    // // if animation required:
+    // if (anim) {
+    //   for (let i = 0; i < vecs.length; i++) {
+    //     // check if it is the last thing to be done then 
+    //     // give next step inside onEndObj
+    //     if (i== vecs.length-1){
+    //     _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], pre_delay, post_delay, onEndObj);
+    //     }
+    //     else{
+    //       _vec_creation_animation(vecs[i], xScale, yScale, self.svgContainer, colorIds[i], pre_delay, 0);
+    //     }
+    //   }
+    // // if no animation required: 
+    // } else {
+    //   for (let i = 0; i < vecs.length; i++) {
+    //     _draw_vectors(vecs[i], xScale, yScale, self.svgContainer, colorIds[i]);
+    //   }
+    // }
+
+
+    return void 0;
   };
   /*
    * use draw_grids if you dont want to draw vectors
@@ -17145,9 +17174,7 @@ var plot = function plot() {
    */
 
 
-  var draw_grids = function draw_grids() {
-    var paramObj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    var onEndObj = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+  var draw_grids = function (paramObj = null, onEndObj = null) {
     // grid_domain={x:100, y:100}, h_grids_conf = {}, v_grids_conf = {}, post_delay=1000, 
     // TODO: think about other way to manage your deflaut parameters
     var dflt_paramObj = {
@@ -17171,7 +17198,7 @@ var plot = function plot() {
 
     _digest_configs(self.vertical_grids_cofnig, v_grids_conf);
 
-    var scales = _configure_axis(self.svgContainer, self.config, null, grid_domain);
+    let scales = _configure_axis_scales(self.svgContainer, self.config, null, grid_domain);
 
     _animate_grid_creation(self.svgContainer, scales.x, scales.y, self.config, self.horizontal_grids_config, self.vertical_grids_cofnig, post_delay, onEndObj);
 
@@ -17186,7 +17213,7 @@ var plot = function plot() {
   */
 
 
-  var next = function next(obj) {
+  var next = function (obj) {
     self.methodQueue.push(obj);
     return this;
   };
@@ -17196,7 +17223,7 @@ var plot = function plot() {
    */
 
 
-  var run = function run() {
+  var run = function () {
     // first function and parameter in the methodQueue
     var firstFunc = self.methodQueue[0].method;
     var firstParam = self.methodQueue[0].param;
@@ -17218,8 +17245,8 @@ var plot = function plot() {
       // thats will be used in first function to evoke next function, because the next functin 
       // will be given onNextObj as input, it will evoke a chain of functions  after another! 
 
-      for (var i = 0; i < queLength - 3; i++) {
-        var nextObj = {
+      for (let i = 0; i < queLength - 3; i++) {
+        let nextObj = {
           onEndFunc: self.methodQueue[end - (i + 1)].method,
           param: self.methodQueue[end - (i + 1)].param,
           // ?self.methodQueue[end - (i + 1)].param : null ,
@@ -17236,7 +17263,7 @@ var plot = function plot() {
       param: self.methodQueue[1].param,
       onNextObj: onNextObj
     };
-    firstFunc.apply(void 0, _toConsumableArray(firstParam).concat([onEndObj]));
+    firstFunc(...firstParam, onEndObj);
     return this;
   }; // return methods for method chaining 
 
@@ -17342,14 +17369,14 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 //import Promise from 'es6-promise'
-var vec1 = new _svgVector.default(-16, -20);
-var vec2 = new _svgVector.default(80, -10);
-var vec3 = new _svgVector.default(-60, 90);
+let vec1 = new _svgVector.default(-16, -20);
+let vec2 = new _svgVector.default(80, -10);
+let vec3 = new _svgVector.default(-60, 90);
 var color_pool = d3.scaleOrdinal(d3.schemeCategory10);
 var vecs = [],
     colors = [];
 
-for (var i = 0; i < 1; i++) {
+for (let i = 0; i < 1; i++) {
   vecs.push(new _svgVector.default(-50 * Math.random(), 80 * Math.random()));
   vecs.push(new _svgVector.default(50 * Math.random(), -100 * Math.random()));
   vecs.push(new _svgVector.default(-50 * Math.random(), -80 * Math.random()));
@@ -17358,7 +17385,7 @@ for (var i = 0; i < 1; i++) {
   colors.push(color_pool(i * 10));
 }
 
-var data = {
+let data = {
   colors: colors,
   vecs: vecs
 };
@@ -17371,17 +17398,10 @@ plt.set_svg_configs({
   svg_container_width: window.innerWidth,
   svg_container_height: window.innerHeight
 });
-plt.set_data(data) // .draw(true, true, 3000, 0)
-.next({
-  method: plt.draw,
-  param: [true, true, 1000, 2000]
-}).next({
-  method: plt.draw_grids,
-  param: null
-}).next({
-  method: plt.add_data,
-  param: [data3, true, true, 2000, 3000]
-}).run();
+plt.set_data(data).draw(true, true, 3000, 0); // .next({method: plt.draw, param:[true, true, 1000, 2000]})
+// .next({method: plt.draw_grids, param: null})
+// .next({method: plt.add_data, param:[data3, true, true, 2000, 3000]})
+// .run()
 },{"./svgVector":"svgVector.js","./plot":"plot.js","d3":"../node_modules/d3/build/d3.js","./index.scss":"index.scss"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -17410,7 +17430,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59296" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51767" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

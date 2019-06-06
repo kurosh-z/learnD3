@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<style>
+        body { margin:0;position:fixed;top:0;right:0;bottom:0;left:0; }
+        svg { width:100%; height: 100% }
+        </style>
+<body>
+        <svg></svg>
+        
+        <script type= "text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.4.2/d3.js"></script>
+
+
+    <script type="text/javascript" >
+        const svg = d3.select('svg')
+        
+        var lineGenerator = d3.line()
+        .x(function (d) {
+          return d[0];
+        })
+        .y(function (d) {
+          return d[1];
+        });
+       
+       var data = [[100, 100], [400, 400]];
+
+       var myLine = svg.append('path')
+       .attr('d', lineGenerator(data))
+       .attr('stroke', 'black')
+       .attr('stroke-width', 2)
+       .style('fill', 'none')
+       .style('opacity', .9)
+       .style('shape-rendering', 'crispEdges')
+       .attr('stroke-dasharray', function () {
+         let pathLength = this.getTotalLength()
+         return pathLength;
+       })
+       .attr('stroke-dashoffset', function () {
+         let pathLength = this.getTotalLength()
+         return pathLength;
+       })
+       .transition()
+       .delay(100)
+       .duration(2000)
+       .attrTween('stroke-dashoffset', line_tweenfunc)
+       .ease(d3.easeLinear)
+       .transition()
+       .delay(100);
+   
+     // tween functions for animation:
+     function line_tweenfunc() {
+       let pathLength = this.getTotalLength();
+       return d3.interpolateNumber(pathLength, 0)
+     }
+   
+    
+    </script>
+    
+</body>
+</html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
         <style>
                 body { margin:0;position:fixed;top:0;right:0;bottom:0;left:0; }
@@ -39,6 +39,58 @@
           .attr("y2", 150)
           .attr("stroke", "black")
         
+
+        
+
+    var lineGenerator = d3.line()
+        .x(function (d) {
+          return d[0];
+        })
+        .y(function (d) {
+          return d[1];
+        });
+       
+       var data = [[100, 100], [400, 400]];
+
+       var myLine = svg.append('path')
+       .attr('stroke', 'black')
+       .attr('stroke-width', 2)
+       .style('fill', 'none')
+       .style('opacity', .9)
+       .style('shape-rendering', 'crispEdges')
+       
+
+       var lineTransition= ()=>{
+         return new Promise((resolve, reject)=>{
+           myLine
+           .attr('d', lineGenerator(data))
+           .attr('stroke-dasharray',  function() {
+                let pathLength = this.getTotalLength()
+                return pathLength;
+              })
+            .attr('stroke-dashoffset', function () {
+              let pathLength = this.getTotalLength()
+              return pathLength;
+            })
+            .transition()
+            .delay(100)
+            .duration(2000)
+            .attrTween('stroke-dashoffset', line_tweenfunc)
+            .ease(d3.easeLinear)
+            .transition()
+            .delay(100);
+        
+          // tween functions for animation:
+          function line_tweenfunc() {
+            let pathLength = this.getTotalLength();
+            return d3.interpolateNumber(pathLength, 0)
+          }
+         })
+       }
+   
+
+
+
         //
         const p1 = () => {
           return new Promise((resolve, reject) => {
@@ -75,7 +127,7 @@
         
           //
           //Promise.all([p1(), p2(), p3(100)]).then(endFn) 
-          p3(2000).then(p1).then(p2)
+          p3(2000).then(lineTransition)
         })
         
         //

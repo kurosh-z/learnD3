@@ -36,11 +36,11 @@ plt
 
 plt
 .set_data(data)
-// .draw(true, true, 3000, 0)
-.next({method: plt.draw, param:[true, true, 1000, 2000]})
-.next({method: plt.draw_grids, param: null})
-.next({method: plt.add_data, param:[data3, true, true, 2000, 3000]})
-.run()
+.draw(true, true, 3000, 0)
+// .next({method: plt.draw, param:[true, true, 1000, 2000]})
+// .next({method: plt.draw_grids, param: null})
+// .next({method: plt.add_data, param:[data3, true, true, 2000, 3000]})
+// .run()
 
 
 
