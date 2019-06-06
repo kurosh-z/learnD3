@@ -182,10 +182,12 @@ return {anim1: anim1,
 var plt =plot()
 
 plt
-.next({method:plt.anim2, param:[100, 200]})
-.next({method:plt.anim2, param:[200, 300]})
+.anim2(100, 200)
+.anim2(300,400)
+// .next({method:plt.anim2, param:[100, 200]})
+// .next({method:plt.anim2, param:[200, 300]})
 // .next({method:plt.anim2, param:300})
 // .next({method:plt.anim1, param:400})
 // .next({method:plt.anim1, param:500})
-.run()
+// .run()
 

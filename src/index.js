@@ -1,7 +1,10 @@
 import Svec from './svgVector'
-import plot from './svgPlot';
+import plot from './plot';
 import * as d3 from 'd3';
 import './index.scss' 
+//import Promise from 'es6-promise'
+
+
 
 let vec1 = new Svec(-16, -20);
 let vec2 = new Svec(80, -10);
@@ -30,9 +33,6 @@ plt
   svg_container_width: window.innerWidth,
   svg_container_height: window.innerHeight
 });
-// .set_data(data)
-// .draw(true, true)
-// .add_data(data3, true, true)
 
 plt
 .set_data(data)
@@ -42,7 +42,7 @@ plt
 .next({method: plt.add_data, param:[data3, true, true, 2000, 3000]})
 .run()
 
-// plt.draw_grids({})
+
 
 
 

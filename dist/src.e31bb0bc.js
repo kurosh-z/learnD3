@@ -16483,32 +16483,13 @@ function () {
 }();
 
 exports.default = SVector;
-},{"d3":"../node_modules/d3/build/d3.js"}],"svgPlot.js":[function(require,module,exports) {
+},{"d3":"../node_modules/d3/build/d3.js"}],"defaults.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-
-var d3 = _interopRequireWildcard(require("d3"));
-
-var _this = void 0;
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
-
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
-
-/*
- *  varaibale and functions needed instide the plot function
- *  TODO: 
- */
 // default svg config
 var dflt_svg_conf = {
   svgContainerId: 'svgVecContainer',
@@ -16534,29 +16515,47 @@ var dflt_v_grid_conf = {
   duration: 1000,
   delay: 10,
   className: 'originalyGrids'
-}; // initializing config with default configs, if no config is given  :  
+}; // export defaults object
 
-var self = {};
-self.config = dflt_svg_conf;
-self.horizontal_grids_config = dflt_h_grid_conf;
-self.vertical_grids_cofnig = dflt_v_grid_conf;
-self.methodQueue = [];
-self.data;
-self.axis_scale;
-self.data_count = 0;
-self.svgContainer;
-self.added_data; // digest new  configs: 
-// TODO: what happens if user want to set a unvalid config?
+var defaults = {
+  dflt_svg_conf: dflt_svg_conf,
+  dflt_h_grid_conf: dflt_h_grid_conf,
+  dflt_v_grid_conf: dflt_v_grid_conf
+};
+var _default = defaults;
+exports.default = _default;
+},{}],"util.js":[function(require,module,exports) {
+"use strict";
 
-function _digest_configs(old_config, new_conf) {
-  for (var key in new_conf) {
-    Object.defineProperty(old_config, key, {
-      value: new_conf[key]
-    });
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var d3 = _interopRequireWildcard(require("d3"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+/* 
+* utility functions used in plot
+*
+*/
+// imports:
+// digest new  configs: 
+var _digest_configs = function _digest_configs(dflt_config, new_config) {
+  for (var key in new_config) {
+    if (!dflt_config.hasOwnProperty(key)) {
+      throw new Error("Invalid key: ".concat(key, " "));
+    } else {
+      Object.defineProperty(dflt_config, key, {
+        value: new_config[key]
+      });
+    }
   }
-}
+}; // configuration method for svg_containers
 
-function _configure_svg_container() {
+
+var _configure_svg_container = function _configure_svg_container(self) {
   var svgContainerId = self.config.svgContainerId;
   var selected = d3.select("#".concat(svgContainerId));
   var svgContainer; // see if there is any container with the same id already exist
@@ -16574,24 +16573,35 @@ function _configure_svg_container() {
   svgContainer.append('g').attr('class', 'xGrids').append('line');
   svgContainer.append('g').attr('class', 'yGrids').append('line');
   return svgContainer;
-}
+};
+/* 
+*  configuring defs :
+*  @param{d3.selection} svgContainer
+*  @param{string}  arrowId: currently we use hex color without # for this!
+*                           they can be produced automatically in digest_data
+*
 
-function _configure_defs(svgContainer, arrowId) {
+*/
+
+
+var _configure_defs = function _configure_defs(svgContainer, arrowId) {
   if (d3.select("#arrowhead".concat(arrowId))._groups[0][0] == null) {
     var defs = svgContainer.append('svg:defs');
     defs.append('svg:marker').attr('id', "arrowhead".concat(arrowId)).attr('viewBox', '0 0 12 12').attr('refX', 11.5).attr('refY', 6).attr('markerWidth', 10).attr('markerHeight', 10).attr('orient', 'auto').append('path').attr('d', 'M 0 0 12 6 0 12 3 6').style('fill', "#".concat(arrowId));
   }
 
   return defs;
-}
+};
 /* 
- * @param{data} : a object consist of :
- *               data = {vecs:[ vec1, vec2, ...],
- *                       colors: [color1, color2, ...],}    
- */
+* @param{obj} : data: a object consist of :
+*               data = {vecs:[ vec1, vec2, ...],
+*                       colors: [color1, color2, ...],}    
+* //TODO: change this to become vector datas seperatly from colors?
+* //TODO: also use defualt colors instead of hex numbers! 
+*/
 
 
-function _digest_data(data, svgContainer) {
+var _digest_data = function _digest_data(data, svgContainer) {
   // set vecs and default colors
   var colors;
   var vecs;
@@ -16599,7 +16609,7 @@ function _digest_data(data, svgContainer) {
   if (data.hasOwnProperty('vecs')) {
     vecs = data['vecs'];
   } else {
-    throw new Error('data has no vecsXD!');
+    throw new Error('data has no vecs!');
   }
 
   if (data.hasOwnProperty('colors')) {
@@ -16634,12 +16644,34 @@ function _digest_data(data, svgContainer) {
     colors: colors,
     colorIds: colorIds
   };
-} // configure axis: 
-//TODO: see if you can do better!
-// if vecs given it gonna calculate domain based on vecs otherwise 
-// it use grid_domain as domain 
+};
 
+var util = {
+  _digest_configs: _digest_configs,
+  _configure_svg_container: _configure_svg_container,
+  _configure_defs: _configure_defs,
+  _digest_data: _digest_data
+};
+var _default = util;
+exports.default = _default;
+},{"d3":"../node_modules/d3/build/d3.js"}],"axis.js":[function(require,module,exports) {
+"use strict";
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var d3 = _interopRequireWildcard(require("d3"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+// imports:
+// configure axis: 
+
+/* //TODO: add presets here for different types of transition 
+  
+*/
 var _configure_axis = function _configure_axis(svgContainer, svg_config) {
   var vecs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
   var grid_domain = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
@@ -16662,11 +16694,67 @@ var _configure_axis = function _configure_axis(svgContainer, svg_config) {
   // _animate_grid_creation(svgContainer, xScale, yScale, config)
 
   return axis_scale;
-}; // update function with path instead of line ( it can be usefull if you want to transform path to another!)
+}; // calculate domain:
+
+
+var _calculate_domain = function _calculate_domain(vecs) {
+  /*
+   * calculates domain to be used by d3.scale 
+   * //TODO: see if you can do better paddings
+   *       add a method to update axis if the user 
+   *       give manually ticks and domain etc
+   */
+  var xComponents = [];
+  var yComponents = [];
+  vecs.forEach(function (element) {
+    xComponents.push(element.x);
+    yComponents.push(element.y);
+  });
+  var maxX = d3.max(xComponents);
+  var minX = d3.min(xComponents);
+  var domainX = d3.max([maxX, Math.abs(minX)]);
+  domainX += domainX * .2;
+  var maxY = d3.max(yComponents);
+  var minY = d3.min(yComponents);
+  var domainY = d3.max([maxY, Math.abs(minY)]);
+  domainY += domainY * .2; // let domain = d3.max([d3.max(xComponents), d3.max(xComponents)]);
+
+  var domain = {
+    x: domainX,
+    y: domainY
+  };
+  return domain;
+};
+
+var axis = {
+  _configure_axis: _configure_axis,
+  _calculate_domain: _calculate_domain
+};
+var _default = axis;
+exports.default = _default;
+},{"d3":"../node_modules/d3/build/d3.js"}],"path.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var d3 = _interopRequireWildcard(require("d3"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
+// update function with path instead of line ( it can be usefull if you want to transform path to another!)
 // TODO: add animation creation 
-
-
-function _create_path_grid(svgContainer, xScale, yScale, config) {
+var _create_path_grid = function _create_path_grid(svgContainer, xScale, yScale, config) {
   _remove_path_grid();
 
   var width = config.svg_container_width,
@@ -16695,13 +16783,13 @@ function _create_path_grid(svgContainer, xScale, yScale, config) {
 
   var yPathData = [];
 
-  for (var _i2 = 0; _i2 < yData.length; _i2++) {
-    yPathData = [[xScale(yData[_i2]), margin.y], [xScale(yData[_i2]), height - margin.y]];
+  for (var _i = 0; _i < yData.length; _i++) {
+    yPathData = [[xScale(yData[_i]), margin.y], [xScale(yData[_i]), height - margin.y]];
     originalyGrids.append('path').attr('class', 'originalyGrids').attr('d', lineGenerator(yPathData)).attr('stroke', '#808080').attr('stroke-width', '0px').style('fill', 'none').style('opacity', .5).style('shape-rendering', 'crispEdges').transition().duration(500).ease(d3.easeCircle).attr('stroke-width', '1.5px');
   }
-}
+};
 
-function _animate_grid_creation(svgContainer, xScale, yScale, config, h_grids_conf, v_grids_conf) {
+var _animate_grid_creation = function _animate_grid_creation(svgContainer, xScale, yScale, config, h_grids_conf, v_grids_conf) {
   var post_delay = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 0;
   var onEndObj = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : null;
 
@@ -16729,17 +16817,17 @@ function _animate_grid_creation(svgContainer, xScale, yScale, config, h_grids_co
 
   var yGrids = svgContainer.select('.yGrids').append('g');
 
-  for (var _i3 = 0; _i3 < yData.length; _i3++) {
+  for (var _i2 = 0; _i2 < yData.length; _i2++) {
     // set new data:
-    var ydata = [[xScale(yData[_i3]), margin.y], [xScale(yData[_i3]), height - margin.y]];
+    var ydata = [[xScale(yData[_i2]), margin.y], [xScale(yData[_i2]), height - margin.y]];
 
-    if (_i3 == yData.length - 1) {
+    if (_i2 == yData.length - 1) {
       _line_path_creation_animation(yGrids, ydata, v_grids_conf, post_delay, onEndObj);
     } else {
       _line_path_creation_animation(yGrids, ydata, v_grids_conf);
     }
   }
-} //_animate_grid_creation
+}; //_animate_grid_creation
 // a method to remove the grids
 
 
@@ -16747,12 +16835,6 @@ var _remove_path_grid = function _remove_path_grid() {
   d3.select('.xGrids').selectAll('path.originalxGrids').remove();
   d3.select('.yGrids').selectAll('path.originalyGrids').remove();
 };
-/*  
- * Utility functions to be used in another functions 
- * //TODO: consider moving thease functions to util.js !
- *
- */
-
 /*
  * @param{obj}: {lineHolder,
  *               data  ,
@@ -16794,14 +16876,7 @@ var _line_path_creation_animation = function _line_path_creation_animation(lineH
     if (onEndObj) {
       onEndFunc.apply(void 0, _toConsumableArray(param).concat([onNextObj]));
     }
-  }); // .on('start', function Linecreation() {
-  //   d3.active(this)
-  //     .transition()
-  //     .duration(duration)
-  //     .attrTween('stroke-dashoffset', line_tweenfunc)
-  //     .delay(delay)
-  // });
-  // tween functions for animation:
+  });
 
   function line_tweenfunc() {
     var pathLength = this.getTotalLength();
@@ -16814,40 +16889,7 @@ var lineGenerator = d3.line().x(function (d) {
   return d[0];
 }).y(function (d) {
   return d[1];
-}); // method to animate the transformation of original grids to new grids 
-// var _transform_path_grid = function(){
-// }
-// calculate domain:
-
-var _calculate_domain = function _calculate_domain(vecs) {
-  /*
-   * calculates domain to be used by d3.scale 
-   * //TODO: see if you can do better paddings
-   *       add a method to update axis if the user 
-   *       give manually ticks and domain etc
-   */
-  var xComponents = [];
-  var yComponents = [];
-  vecs.forEach(function (element) {
-    xComponents.push(element.x);
-    yComponents.push(element.y);
-  });
-  var maxX = d3.max(xComponents);
-  var minX = d3.min(xComponents);
-  var domainX = d3.max([maxX, Math.abs(minX)]);
-  domainX += domainX * .2;
-  var maxY = d3.max(yComponents);
-  var minY = d3.min(yComponents);
-  var domainY = d3.max([maxY, Math.abs(minY)]);
-  domainY += domainY * .2; // let domain = d3.max([d3.max(xComponents), d3.max(xComponents)]);
-
-  var domain = {
-    x: domainX,
-    y: domainY
-  };
-  return domain;
-}; // draw vectors:
-
+}); // draw vectors:
 
 var _draw_vectors = function _draw_vectors(vec, xScale, yScale, svgContainer, colorId) {
   // animate drawing 
@@ -16874,7 +16916,6 @@ var _vec_creation_animation = function _vec_creation_animation(vec, xScale, ySca
     return pathLength;
   }).transition().duration(500).delay(pre_delay).ease(d3.easeLinear).attrTween('stroke-dashoffset', line_tweenfunc).transition().duration(500).attrTween('marker-end', arrow_tweenfunc).transition().delay(post_delay).on('end', function () {
     if (onEndObj) {
-      console.log('param: ', param);
       param ? onEndFunc.apply(void 0, _toConsumableArray(param).concat([onNextObj])) : onEndFunc(null, onNextObj);
     }
   }); // tween functions for animation:
@@ -16894,18 +16935,84 @@ var _vec_creation_animation = function _vec_creation_animation(vec, xScale, ySca
     };
   }
 };
+
+var path = {
+  _create_path_grid: _create_path_grid,
+  _animate_grid_creation: _animate_grid_creation,
+  _line_path_creation_animation: _line_path_creation_animation,
+  _draw_vectors: _draw_vectors,
+  _vec_creation_animation: _vec_creation_animation
+};
+var _default = path;
+exports.default = _default;
+},{"d3":"../node_modules/d3/build/d3.js"}],"plot.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var d3 = _interopRequireWildcard(require("d3"));
+
+var _defaults = _interopRequireDefault(require("./defaults.js"));
+
+var _util = _interopRequireDefault(require("./util"));
+
+var _axis = _interopRequireDefault(require("./axis.js"));
+
+var _path = _interopRequireDefault(require("./path.js"));
+
+var _this = void 0;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
+var dflt_svg_conf = _defaults.default.dflt_svg_conf;
+var dflt_h_grid_conf = _defaults.default.dflt_h_grid_conf;
+var dflt_v_grid_conf = _defaults.default.dflt_v_grid_conf;
+var _digest_configs = _util.default._digest_configs;
+var _configure_svg_container = _util.default._configure_svg_container; //var _configure_defs= util._configure_defs;
+
+var _digest_data = _util.default._digest_data;
+var _configure_axis = _axis.default._configure_axis; //var _calculate_domain=axis._calculate_domain;
+
+var _create_path_grid = _path.default._create_path_grid,
+    _animate_grid_creation = _path.default._animate_grid_creation,
+    // _line_path_creation_animation = path._line_path_creation_animation,
+_draw_vectors = _path.default._draw_vectors,
+    _vec_creation_animation = _path.default._vec_creation_animation; // initializing config with default configs, if no config is given  :  
+
+var self = {};
+self.config = dflt_svg_conf;
+self.horizontal_grids_config = dflt_h_grid_conf;
+self.vertical_grids_cofnig = dflt_v_grid_conf;
+self.methodQueue = [];
+self.data;
+self.axis_scale;
+self.data_count = 0;
+self.svgContainer;
+self.added_data;
 /*
  * Default function to be exportet :
  * can be used with method chainging 
  */
 
-
-var svec_plot = function svec_plot() {
+var plot = function plot() {
   //configure svg configs 
   var set_svg_configs = function set_svg_configs(svg_conf) {
     _digest_configs(self.config, svg_conf);
 
-    self.svgContainer = _configure_svg_container();
+    self.svgContainer = _configure_svg_container(self);
     return this;
   }; // set data and colors
 
@@ -16971,20 +17078,20 @@ var svec_plot = function svec_plot() {
 
 
     if (anim) {
-      for (var _i4 = 0; _i4 < vecs.length; _i4++) {
+      for (var _i = 0; _i < vecs.length; _i++) {
         // check if its the last one to be done --> evoke next action 
         // by setting onEndObj
-        if (_i4 == vecs.length - 1) {
-          _vec_creation_animation(vecs[_i4], xScale, yScale, self.svgContainer, colorIds[_i4], pre_delay, post_delay, onEndObj);
+        if (_i == vecs.length - 1) {
+          _vec_creation_animation(vecs[_i], xScale, yScale, self.svgContainer, colorIds[_i], pre_delay, post_delay, onEndObj);
         } else {
-          _vec_creation_animation(vecs[_i4], xScale, yScale, self.svgContainer, colorIds[_i4], pre_delay, 0);
+          _vec_creation_animation(vecs[_i], xScale, yScale, self.svgContainer, colorIds[_i], pre_delay, 0);
         }
       } // if no animation is requried simply do it!
       // TODO: correct this by adding onEndObj here : what happens if you need to do something after _draw_vectors without animation?
 
     } else {
-      for (var _i5 = 0; _i5 < vecs.length; _i5++) {
-        _draw_vectors(vecs[_i5], xScale, yScale, self.svgContainer, colorIds[_i5]);
+      for (var _i2 = 0; _i2 < vecs.length; _i2++) {
+        _draw_vectors(vecs[_i2], xScale, yScale, self.svgContainer, colorIds[_i2]);
       }
     }
 
@@ -17023,8 +17130,8 @@ var svec_plot = function svec_plot() {
       } // if no animation required: 
 
     } else {
-      for (var _i6 = 0; _i6 < vecs.length; _i6++) {
-        _draw_vectors(vecs[_i6], xScale, yScale, self.svgContainer, colorIds[_i6]);
+      for (var _i3 = 0; _i3 < vecs.length; _i3++) {
+        _draw_vectors(vecs[_i3], xScale, yScale, self.svgContainer, colorIds[_i3]);
       }
     }
 
@@ -17146,8 +17253,8 @@ var svec_plot = function svec_plot() {
   };
 };
 
-exports.default = svec_plot;
-},{"d3":"../node_modules/d3/build/d3.js"}],"../node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
+exports.default = plot;
+},{"d3":"../node_modules/d3/build/d3.js","./defaults.js":"defaults.js","./util":"util.js","./axis.js":"axis.js","./path.js":"path.js"}],"../node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
 var bundleURL = null;
 
 function getBundleURLCached() {
@@ -17224,7 +17331,7 @@ module.hot.accept(reloadCSS);
 
 var _svgVector = _interopRequireDefault(require("./svgVector"));
 
-var _svgPlot = _interopRequireDefault(require("./svgPlot"));
+var _plot = _interopRequireDefault(require("./plot"));
 
 var d3 = _interopRequireWildcard(require("d3"));
 
@@ -17234,6 +17341,7 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+//import Promise from 'es6-promise'
 var vec1 = new _svgVector.default(-16, -20);
 var vec2 = new _svgVector.default(80, -10);
 var vec3 = new _svgVector.default(-60, 90);
@@ -17258,14 +17366,11 @@ var data3 = {
   vecs: [vec1, vec2, vec3],
   colors: ['#FF0000', '#FF0000', '#FF0000']
 };
-var plt = (0, _svgPlot.default)();
+var plt = (0, _plot.default)();
 plt.set_svg_configs({
   svg_container_width: window.innerWidth,
   svg_container_height: window.innerHeight
-}); // .set_data(data)
-// .draw(true, true)
-// .add_data(data3, true, true)
-
+});
 plt.set_data(data) // .draw(true, true, 3000, 0)
 .next({
   method: plt.draw,
@@ -17276,8 +17381,8 @@ plt.set_data(data) // .draw(true, true, 3000, 0)
 }).next({
   method: plt.add_data,
   param: [data3, true, true, 2000, 3000]
-}).run(); // plt.draw_grids({})
-},{"./svgVector":"svgVector.js","./svgPlot":"svgPlot.js","d3":"../node_modules/d3/build/d3.js","./index.scss":"index.scss"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+}).run();
+},{"./svgVector":"svgVector.js","./plot":"plot.js","d3":"../node_modules/d3/build/d3.js","./index.scss":"index.scss"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -17305,7 +17410,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54844" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59296" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

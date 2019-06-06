@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+        <style>
+                body { margin:0;position:fixed;top:0;right:0;bottom:0;left:0; }
+                svg { width:100%; height: 100% }
+                </style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+        <button>transition</button>  
+        
+        <svg></svg>
+        
+        <script type= "text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.4.2/d3.js"></script>
+
+        
+        <script type="text/javascript">
+        const svg = d3.select('svg')
+        
+        const circle = svg.append("circle")
+          .attr("cx", 100)
+          .attr("cy", 50)
+          .attr("r", 20)
+            
+        const rect = svg.append("rect")
+          .attr("x", 100)
+          .attr("y", 100)
+          .attr("width", 30)
+          .attr("height", 30)
+        
+        const line = svg.append("line")
+          .attr("x1", 100)
+          .attr("y1", 150)
+          .attr("x2", 100)
+          .attr("y2", 150)
+          .attr("stroke", "black")
+        
+        //
+        const p1 = () => {
+          return new Promise((resolve, reject) => {
+            circle.transition().duration(2000)
+              .attr("cx", 800)
+              .on("end", resolve) 
+          })
+        }
+        
+        const p2 = () => {
+          return new Promise((resolve, reject) => {
+            rect.transition().duration(2000)
+              .attr("x", 800)
+              .on("end", resolve) 
+          })
+        }
+        
+        const p3 = (t) => {
+            //var t= Math.floor(Math.random()*5000)
+          return new Promise((resolve, reject) => {
+            line.transition().duration(t)
+              .attr("x2", 800)
+              .on("end", resolve) 
+          })
+        }
+        
+        
+        d3.select("button").on("click", function(){
+          //
+          d3.select("body").style("background-color", "white")
+          circle.attr("cx", 100)
+          rect.attr("x", 100)
+          line.attr("x2", 100)
+        
+          //
+          //Promise.all([p1(), p2(), p3(100)]).then(endFn) 
+          p3(2000).then(p1).then(p2)
+        })
+        
+        //
+        function endFn(){
+          d3.select("body").style("background-color", "pink")
+        }         
+        </script>
+        </body>
+</html>

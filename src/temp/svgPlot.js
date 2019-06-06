@@ -51,13 +51,18 @@ self.svgContainer;
 self.added_data;
 
 // digest new  configs: 
-// TODO: what happens if user want to set a unvalid config?
-function _digest_configs(old_config, new_conf) {
+function _digest_configs(dflt_config, new_config) {
 
-  for (let key in new_conf) {
-    Object.defineProperty(old_config, key, {
-      value: new_conf[key]
-    });
+  for (let key in new_config) {
+
+    if (!(dflt_config.hasOwnProperty(key))) {
+      throw new Error(`Invalid key: ${key} `)
+    } else {
+      Object.defineProperty(dflt_config, key, {
+        value: new_config[key]
+      });
+    }
+
   }
 }
 
@@ -565,7 +570,6 @@ var _vec_creation_animation = function (vec, xScale, yScale, svgContainer, color
     .delay(post_delay)
     .on('end', function (){    
             if(onEndObj){
-              console.log('param: ',param);
               param ? onEndFunc(...param, onNextObj):onEndFunc(null, onNextObj);
             }
           })
@@ -852,6 +856,7 @@ const svec_plot = () => {
   // return methods for method chaining 
   return {
     config: self.config,
+    self: self,
     set_svg_configs: set_svg_configs,
     set_data: set_data,
     add_data: add_data,
