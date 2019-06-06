@@ -2,11 +2,10 @@
 import * as d3 from 'd3'
 
 
-// update function with path instead of line ( it can be usefull if you want to transform path to another!)
-// TODO: add animation creation 
+// update function with path instead of line ( it can be usefull if you want to transform path to another!)n 
 var _create_path_grid= function(svgContainer, xScale, yScale, config) {
 
-    var old_grids_remove_promis =_remove_path_grid();
+    var old_grids_remove_func =_remove_path_grid();
 
     var width = config.svg_container_width,
       height = config.svg_container_height,
@@ -71,7 +70,7 @@ var _create_path_grid= function(svgContainer, xScale, yScale, config) {
         .attr('stroke', '#808080')
         .attr('stroke-width', '0px')
         .style('fill', 'none')
-        .style('opacity', .5)
+        .style('opacity', .6)
         .style('shape-rendering', 'crispEdges')
         .transition()
         .duration(500)
@@ -86,7 +85,7 @@ var _create_path_grid= function(svgContainer, xScale, yScale, config) {
     // TODO: do you need animation for removing?
     
     // remove old grids
-    var old_grids_remove_promis =_remove_path_grid();
+    var old_grids_remove_func =_remove_path_grid();
     
   
     // creatte new ones :
@@ -133,39 +132,35 @@ var _create_path_grid= function(svgContainer, xScale, yScale, config) {
 
 
     }
-  var all_xpromises = [];
-  var all_ypromises = [];
-  
-  xGrid_promise_list.forEach((item)=>{
-    all_xpromises.push(item())
-  })
+ 
 
-  
-  yGrid_promise_list.forEach((item)=>{
-    all_ypromises.push(item())
-  })
+  // async run functions
 
-  async function run(){
-    for( let i=0; i<all_ypromises.length; i++){
-      await Promise.all(all_xpromises);
-      await Promise.all(all_ypromises);
-    }
+  var all_Xpromises = [],
+      all_Ypromises = [];
+      
+
+  async function run_xGrids(){
+    xGrid_promise_list.forEach((item)=>{
+      all_Xpromises.push(item())
+    })
+  
+      await Promise.all(all_Xpromises)
   }
-
-  run()
-  // run(yGrid_promise_list)
-  // run(xGrid_promise_list)
-
-  //Promise.all([xGrid_promise_list[3](), xGrid_promise_list[4]()])
-  // .then(()=>{
-  //   Promise.resolve(xGrid_promise_list[3])
-  // })
+  
+  async function run_yGrids(){
+    yGrid_promise_list.forEach((item)=>{
+      all_Ypromises.push(item())
+    })
+    await Promise.all(all_Ypromises)
+  }
+   
   
 
   let animate_grids_promises = {
-    old_grids_remove_promis: old_grids_remove_promis,
-    xGrid_promise_list: xGrid_promise_list,
-    yGrid_promise_list: yGrid_promise_list
+    old_grids_remove_func: old_grids_remove_func,
+    xGrid_func: run_xGrids,
+    yGrid_func: run_yGrids,
   };
 
   return animate_grids_promises
@@ -201,7 +196,12 @@ var _create_path_grid= function(svgContainer, xScale, yScale, config) {
       .on('end', resolve)
     })}  
 
-    return remove_grids_promise
+    // async run function 
+    var run_remove_grids= async function (){
+      await remove_grids_promise()
+    }
+
+    return run_remove_grids
   
   }
   

@@ -172,31 +172,32 @@ self.added_data;
           v_grids_conf= self.vertical_grids_cofnig;
 
       // axixTrans is just a Promise we use all this promises to manage the sequence of drawing components at the end of the function
-      let axisTrans =_axisTransitions(svgContainer, xScale, yScale),
-          xAxisTrans_promise= axisTrans.x,
-          yAxisTrans_promise= axisTrans.y;
+      let axis_async_funcs =_axisTransitions(svgContainer, xScale, yScale),
+          xAxis_async_func= axis_async_funcs.x;
+          // yAxis_async_func= axis_async_funcs.y;
 
            
-      var grids_promises = _animate_grid_creation(svgContainer,xScale, yScale, self.config, h_grids_conf, v_grids_conf );
+      var grids_async_funcs = _animate_grid_creation(svgContainer,xScale, yScale, self.config, h_grids_conf, v_grids_conf );
 
-      // var old_grids_remove_promis = grids_promises.old_grids_remove_promis,
-      //     xGrid_promise_list = grids_promises.xGrid_promise_list,
-      //     yGrid_promise_list = grids_promises.yGrid_promise_list;
+      // var old_grids_remove_func = grids_async_funcs.old_grids_remove_func,
+      var xGrid_ceation_func= grids_async_funcs.xGrid_func,
+          yGrid_ceation_func = grids_async_funcs.yGrid_func;
 
-      // var grids_promises_func_lis=[];
+      
+      (async function() {
+        await xAxis_async_func();
+        // await yAxis_async_func();
+        await xGrid_ceation_func();
+        await yGrid_ceation_func();
+
+      })()
+
+
     
-      // xGrid_promise_list.forEach((item)=>{
-      //   grids_promises_func_lis.push(item())
-      // })
-      // yGrid_promise_list.forEach((item)=>{
-      //   grids_promises_func_lis.push(item())
-      // })
-    
 
 
-      // Promise.all([xAxisTrans_promise(), yAxisTrans_promise()])
-      // .then(old_grids_remove_promis())
-      // .then(Promise.all(grids_promises_func_lis))
+
+     
 
 
 

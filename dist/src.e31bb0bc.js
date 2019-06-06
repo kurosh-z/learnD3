@@ -16682,22 +16682,32 @@ var _axisTransitions = function (svgContainer, xScale, yScale) {
 
   const xAxisTransition = () => {
     new Promise((resolve, reject) => {
-      xAxis.attr("transform", "translate(" + 0 + "," + yScale(0) + ")").transition().duration(1000).delay(1500).ease(d3.easeLinear).call(d3.axisBottom(xScale)).on('end', resolve);
+      xAxis.attr("transform", "translate(" + 0 + "," + yScale(0) + ")").transition().duration(2000).delay(200).ease(d3.easeLinear).call(d3.axisBottom(xScale)).on('end', resolve);
     });
   }; // Add the y Axis
 
 
   const yAxisTransition = () => {
     return new Promise((resolve, reject) => {
-      yAxis.attr("transform", "translate(" + xScale(0) + "," + 0 + ")").transition().duration(1000).delay(500).ease(d3.easeLinear).call(d3.axisLeft(yScale)).on('end', resolve);
+      yAxis.attr("transform", "translate(" + xScale(0) + "," + 0 + ")").transition().duration(2000).delay(200).ease(d3.easeLinear).call(d3.axisLeft(yScale)).on('end', resolve);
     });
+  }; // make async functions for transitions to return
+
+
+  var x_axis_creation_func = async function () {
+    await xAxisTransition();
+    await yAxisTransition();
   };
 
-  let axis_trans = {
-    x: xAxisTransition,
-    y: yAxisTransition
+  var y_axis_createion_func = async function () {
+    await yAxisTransition();
   };
-  return axis_trans;
+
+  let axis_trans_funcs = {
+    x: x_axis_creation_func,
+    y: y_axis_createion_func
+  };
+  return axis_trans_funcs;
 }; // calculate domain:
 
 
@@ -16749,10 +16759,9 @@ var d3 = _interopRequireWildcard(require("d3"));
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
 
-// update function with path instead of line ( it can be usefull if you want to transform path to another!)
-// TODO: add animation creation 
+// update function with path instead of line ( it can be usefull if you want to transform path to another!)n 
 var _create_path_grid = function (svgContainer, xScale, yScale, config) {
-  var old_grids_remove_promis = _remove_path_grid();
+  var old_grids_remove_func = _remove_path_grid();
 
   var width = config.svg_container_width,
       height = config.svg_container_height,
@@ -16782,7 +16791,7 @@ var _create_path_grid = function (svgContainer, xScale, yScale, config) {
 
   for (let i = 0; i < yData.length; i++) {
     yPathData = [[xScale(yData[i]), margin.y], [xScale(yData[i]), height - margin.y]];
-    originalyGrids.append('path').attr('class', 'originalyGrids').attr('d', lineGenerator(yPathData)).attr('stroke', '#808080').attr('stroke-width', '0px').style('fill', 'none').style('opacity', .5).style('shape-rendering', 'crispEdges').transition().duration(500).ease(d3.easeCircle).attr('stroke-width', '1.5px');
+    originalyGrids.append('path').attr('class', 'originalyGrids').attr('d', lineGenerator(yPathData)).attr('stroke', '#808080').attr('stroke-width', '0px').style('fill', 'none').style('opacity', .6).style('shape-rendering', 'crispEdges').transition().duration(500).ease(d3.easeCircle).attr('stroke-width', '1.5px');
   }
 };
 
@@ -16790,7 +16799,7 @@ var _animate_grid_creation = function (svgContainer, xScale, yScale, config, h_g
   // remove existing grids
   // TODO: do you need animation for removing?
   // remove old grids
-  var old_grids_remove_promis = _remove_path_grid(); // creatte new ones :
+  var old_grids_remove_func = _remove_path_grid(); // creatte new ones :
 
 
   var width = config.svg_container_width,
@@ -16817,35 +16826,30 @@ var _animate_grid_creation = function (svgContainer, xScale, yScale, config, h_g
     // set new data:
     let ydata = [[xScale(yData[i]), margin.y], [xScale(yData[i]), height - margin.y]];
     yGrid_promise_list.push(_line_path_creation_animation(yGridGroup, ydata, v_grids_conf));
+  } // async run functions
+
+
+  var all_Xpromises = [],
+      all_Ypromises = [];
+
+  async function run_xGrids() {
+    xGrid_promise_list.forEach(item => {
+      all_Xpromises.push(item());
+    });
+    await Promise.all(all_Xpromises);
   }
 
-  var all_xpromises = [];
-  var all_ypromises = [];
-  xGrid_promise_list.forEach(item => {
-    all_xpromises.push(item());
-  });
-  yGrid_promise_list.forEach(item => {
-    all_ypromises.push(item());
-  });
-
-  async function run() {
-    for (let i = 0; i < all_ypromises.length; i++) {
-      await Promise.all(all_xpromises);
-      await Promise.all(all_ypromises);
-    }
+  async function run_yGrids() {
+    yGrid_promise_list.forEach(item => {
+      all_Ypromises.push(item());
+    });
+    await Promise.all(all_Ypromises);
   }
-
-  run(); // run(yGrid_promise_list)
-  // run(xGrid_promise_list)
-  //Promise.all([xGrid_promise_list[3](), xGrid_promise_list[4]()])
-  // .then(()=>{
-  //   Promise.resolve(xGrid_promise_list[3])
-  // })
 
   let animate_grids_promises = {
-    old_grids_remove_promis: old_grids_remove_promis,
-    xGrid_promise_list: xGrid_promise_list,
-    yGrid_promise_list: yGrid_promise_list
+    old_grids_remove_func: old_grids_remove_func,
+    xGrid_func: run_xGrids,
+    yGrid_func: run_yGrids
   };
   return animate_grids_promises;
 }; //_animate_grid_creation
@@ -16863,9 +16867,14 @@ var _remove_path_grid = function (xGidsCl, yGridsCl) {
       xGrids.transition().duration(100).remove();
       yGrids.transition().duration(100).remove().on('end', resolve);
     });
+  }; // async run function 
+
+
+  var run_remove_grids = async function () {
+    await remove_grids_promise();
   };
 
-  return remove_grids_promise;
+  return run_remove_grids;
 };
 /*
  * @param{obj}: {lineGroup,
@@ -17124,24 +17133,22 @@ const plot = () => {
         h_grids_conf = self.horizontal_grids_config,
         v_grids_conf = self.vertical_grids_cofnig; // axixTrans is just a Promise we use all this promises to manage the sequence of drawing components at the end of the function
 
-    let axisTrans = _axisTransitions(svgContainer, xScale, yScale),
-        xAxisTrans_promise = axisTrans.x,
-        yAxisTrans_promise = axisTrans.y;
+    let axis_async_funcs = _axisTransitions(svgContainer, xScale, yScale),
+        xAxis_async_func = axis_async_funcs.x; // yAxis_async_func= axis_async_funcs.y;
 
-    var grids_promises = _animate_grid_creation(svgContainer, xScale, yScale, self.config, h_grids_conf, v_grids_conf); // var old_grids_remove_promis = grids_promises.old_grids_remove_promis,
-    //     xGrid_promise_list = grids_promises.xGrid_promise_list,
-    //     yGrid_promise_list = grids_promises.yGrid_promise_list;
-    // var grids_promises_func_lis=[];
-    // xGrid_promise_list.forEach((item)=>{
-    //   grids_promises_func_lis.push(item())
-    // })
-    // yGrid_promise_list.forEach((item)=>{
-    //   grids_promises_func_lis.push(item())
-    // })
-    // Promise.all([xAxisTrans_promise(), yAxisTrans_promise()])
-    // .then(old_grids_remove_promis())
-    // .then(Promise.all(grids_promises_func_lis))
-    // if (grids) {
+
+    var grids_async_funcs = _animate_grid_creation(svgContainer, xScale, yScale, self.config, h_grids_conf, v_grids_conf); // var old_grids_remove_func = grids_async_funcs.old_grids_remove_func,
+
+
+    var xGrid_ceation_func = grids_async_funcs.xGrid_func,
+        yGrid_ceation_func = grids_async_funcs.yGrid_func;
+
+    (async function () {
+      await xAxis_async_func(); // await yAxis_async_func();
+
+      await xGrid_ceation_func();
+      await yGrid_ceation_func();
+    })(); // if (grids) {
     //   _create_path_grid(svgContainer, xScale, yScale, self.config);
     // }
     // // if animation required:
@@ -17430,7 +17437,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51767" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61800" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
