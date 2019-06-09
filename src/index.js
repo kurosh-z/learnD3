@@ -14,35 +14,49 @@ var color_pool = d3.scaleOrdinal(d3.schemeCategory10);
 var vecs =[],
     colors=[];
 for(let i=0; i<1; i++){
-  vecs.push(new Svec(-50*Math.random(), 80*Math.random()));
+  vecs.push(new Svec(-20*Math.random(), 80*Math.random()));
   vecs.push(new Svec(50*Math.random(), -100*Math.random()));
   vecs.push(new Svec(-50*Math.random(), -80*Math.random()));
-  colors.push(color_pool(i));
-  colors.push(color_pool(i*4));
-  colors.push(color_pool(i*10));
-
+  colors.push('#000000');
+  colors.push(color_pool(10+i));
+  colors.push(color_pool(Math.random()*100));
+  
 }
-let data={colors: colors, vecs: vecs};
-var data3={vecs: [vec1, vec2, vec3], 
-           colors:['#FF0000', '#FF0000', '#FF0000']}
+
+var data = {'vecs1': vecs};
+var vec_config_list =[];
+var i=0;
+vecs.forEach(()=>{
+  let vec_config = {'stroke_color': colors[i],
+                    'stroke_width': 1.6,
+                    'opacity':1}
+  vec_config_list.push(vec_config)
+  i+=1;
+})
+
+vecs.push(new Svec(60*Math.random(), 60*Math.random()))
+
+
 
 
 var plt = plot();
-plt
-.set_svg_configs({
-  svg_container_width: window.innerWidth,
-  svg_container_height: window.innerHeight
-});
 
 plt
-.set_data(data)
-.draw(true, true, 3000, 0)
-// .next({method: plt.draw, param:[true, true, 1000, 2000]})
-// .next({method: plt.draw_grids, param: null})
-// .next({method: plt.add_data, param:[data3, true, true, 2000, 3000]})
-// .run()
+.set_svg_configs()
+.add_data(data)
+.draw('vecs1', true, true, vec_config_list)
+
+var queue= plt.methodQueue;
 
 
+ (async function () {
+        await Promise.all([queue.xAxis(), queue.yAxis()]);
+        await Promise.all([queue.xGrids(), queue.yGrids()]);
+        // await queue.xGrids();
+        // await queue.yGrids();
+        await queue.vecs_creation();
+
+      })();
 
 
 

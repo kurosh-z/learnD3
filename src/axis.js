@@ -12,8 +12,8 @@ import * as d3 from 'd3';
 
 var _configure_axis_scales = function (svgContainer, svg_config, vecs = null, grid_domain = null) {
 
-  let svg_width = svg_config.svg_container_width;
-  let svg_height = svg_config.svg_container_height;
+  let svg_width = svg_config.width;
+  let svg_height = svg_config.height;
   let margin = svg_config.svg_margin;
   var domain = {}
 
@@ -47,10 +47,10 @@ var _axisTransitions= function(svgContainer, xScale, yScale){
 
   // axis transitions      
   const xAxisTransition = () => {
-    new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         xAxis.attr("transform", "translate(" + 0 + "," + yScale(0) + ")")
           .transition()
-          .duration(2000)
+          .duration(1000)
           .delay(200)
           .ease(d3.easeLinear)
           .call(d3.axisBottom(xScale))
@@ -67,7 +67,7 @@ var _axisTransitions= function(svgContainer, xScale, yScale){
     return new Promise((resolve, reject) => {
       yAxis.attr("transform", "translate(" + xScale(0) + "," + 0 + ")")
         .transition()
-        .duration(2000)
+        .duration(1000)
         .delay(200)
         .ease(d3.easeLinear)
         .call(d3.axisLeft(yScale))
@@ -79,18 +79,16 @@ var _axisTransitions= function(svgContainer, xScale, yScale){
 
 
   // make async functions for transitions to return
-  var x_axis_creation_func= async function (){
-        await xAxisTransition();
-        await yAxisTransition();
-
-  }
+  // var x_axis_creation_func= async function (){
+  //      xAxisTransition();
+  // }
   
-  var y_axis_createion_func = async function (){
-    await yAxisTransition();
-  }
+  // var y_axis_createion_func = async function (){
+  //   yAxisTransition();
+  // }
 
-  let axis_trans_funcs ={x: x_axis_creation_func, 
-    y: y_axis_createion_func};
+  let axis_trans_funcs ={x: xAxisTransition, 
+    y: yAxisTransition};
 
 
   return axis_trans_funcs

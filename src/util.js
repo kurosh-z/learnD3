@@ -8,29 +8,58 @@
 // imports:
 import * as d3 from 'd3';
 
+import defaults from './defaults';
 
+var  dflt_vector_colorId = (defaults.dflt_vec_conf.stroke_color).split('#')[1]; 
+
+
+// deep copy of an object
+function _deepObjectCopy(obj) {
+  var clone = {};
+  for(var i in obj) {
+      if(typeof(obj[i])=="object" && obj[i] != null)
+          clone[i] = _deepObjectCopy(obj[i]);
+      else
+          clone[i] = obj[i];
+  }
+  return clone;
+}
 
 // digest new  configs: 
 var _digest_configs = function (dflt_config, new_config) {
-
+  
+  // make a deep copy of dflt_config so that it dosent affect the default 
+  var config = _deepObjectCopy(dflt_config);
   for (let key in new_config) {
 
     if (!(dflt_config.hasOwnProperty(key))) {
       throw new Error(`Invalid key: ${key} `)
     } else {
-      Object.defineProperty(dflt_config, key, {
+      Object.defineProperty(config, key, {
         value: new_config[key]
       });
     }
-
   }
+  return config
+}
+
+
+var _digest_config_list = function(dflt_config, config_list){
+  
+
+  var new_config_list=[];
+  config_list.forEach((config)=>{
+    new_config_list.push(_digest_configs(dflt_config, config))
+  })
+  return new_config_list;
+
 }
 
 // configuration method for svg_containers
 
-var _configure_svg_container =function (self) {
-
-    let svgContainerId = self.config.svgContainerId;
+var _configure_svg_container =function (svg_conf) {
+ 
+    let svgContainerId = svg_conf.svgContainerId;
     let selected = d3.select(`#${svgContainerId}`);
     var svgContainer;
   
@@ -39,8 +68,8 @@ var _configure_svg_container =function (self) {
     if (selected._groups[0][0] == null) {
   
       svgContainer = d3.select('body').append('svg')
-        .attr('width', self.config.svg_container_width)
-        .attr('height', self.config.svg_container_height)
+        .attr('width', svg_conf.width)
+        .attr('height', svg_conf.height)
         .attr('id', `${svgContainerId}`);
   
   
@@ -57,11 +86,12 @@ var _configure_svg_container =function (self) {
     svgContainer.append('g')
       .attr('class', 'yAxis');
     svgContainer.append('g')
-      .attr('class', 'xGrids')
-      .append('line');
+      .attr('class', 'xGrids');
     svgContainer.append('g')
-      .attr('class', 'yGrids')
-      .append('line');
+      .attr('class', 'yGrids');
+
+    // create default def for arrow 
+    _configure_defs(svgContainer, dflt_vector_colorId)
   
   
   
@@ -100,62 +130,27 @@ var _configure_svg_container =function (self) {
   }
 
 
-  /* 
- * @param{obj} : data: a object consist of :
- *               data = {vecs:[ vec1, vec2, ...],
- *                       colors: [color1, color2, ...],}    
- * //TODO: change this to become vector datas seperatly from colors?
- * //TODO: also use defualt colors instead of hex numbers! 
- */
-var _digest_data = function (data, svgContainer) {
+var _digest_vec_config_list= function(dflt_vec_conf, vec_config_list, svgContainer ){
 
-    // set vecs and default colors
-    var colors;
-    var vecs;
-  
-    if (data.hasOwnProperty('vecs')) {
-      vecs = data['vecs'];
-    } else {
-      throw new Error('data has no vecs!')
-    }
-    if (data.hasOwnProperty('colors')) {
-      colors = data['colors']
-    } else {
-      colors = []
-      for (let i = 0; i < vecs.length; i++) {
-        colors.push('#1DA1F2')
-      }
-    }
-  
-  
-    var dif;
-    dif = vecs.length - colors.length;
-    if (dif > 0) {
-      for (let i = 0; i < dif; i++) {
-        colors.push('#1DA1F2')
-      }
-    }
-  
-    // configure colorIds for defs
-    var colorIds = [];
-    colors.forEach(color => {
-      let colorId = color.split('#')[1];
-      colorIds.push(colorId);
-      _configure_defs(svgContainer, colorId)
-    });
-  
-    return {
-      vecs: vecs,
-      colors: colors,
-      colorIds: colorIds
-    };
-  }
+  vec_config_list =_digest_config_list(dflt_vec_conf, vec_config_list )
+
+  vec_config_list.
+  forEach((config)=>{
+    let colorId = (config.stroke_color).split('#')[1];
+    _configure_defs(svgContainer, colorId)
+  })
+
+  return vec_config_list
+}
+
+
 
   var util = {
     _digest_configs: _digest_configs,
     _configure_svg_container:_configure_svg_container,
     _configure_defs:_configure_defs,
-    _digest_data:_digest_data
+    _digest_vec_config_list:_digest_vec_config_list,
+    _deepObjectCopy: _deepObjectCopy,
   };
 
   export default util;

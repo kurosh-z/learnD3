@@ -1,15 +1,20 @@
 
 import * as d3 from 'd3'
+import defaults from './defaults';
+var dflt_vec_conf = defaults.dflt_vec_conf;
+
+import { dirname } from 'path';
+
 
 
 // update function with path instead of line ( it can be usefull if you want to transform path to another!)n 
-var _create_path_grid= function(svgContainer, xScale, yScale, config) {
+var _create_path_grid= function(svgContainer, xScale, yScale, svg_config) {
 
     var old_grids_remove_func =_remove_path_grid();
 
-    var width = config.svg_container_width,
-      height = config.svg_container_height,
-      margin = config.svg_margin,
+    var width = svg_config.width,
+      height = svg_config.height,
+      margin = svg_config.svg_margin,
       xData = yScale.ticks(10),
       yData = xScale.ticks(10);
   
@@ -79,7 +84,7 @@ var _create_path_grid= function(svgContainer, xScale, yScale, config) {
     }
   }
   
-  var _animate_grid_creation = function(svgContainer, xScale, yScale, config, h_grids_conf, v_grids_conf) {
+  var _animate_grid_creation = function(svgContainer, xScale, yScale, svg_config, h_grids_conf, v_grids_conf) {
   
     // remove existing grids
     // TODO: do you need animation for removing?
@@ -89,9 +94,9 @@ var _create_path_grid= function(svgContainer, xScale, yScale, config) {
     
   
     // creatte new ones :
-    var width = config.svg_container_width,
-      height = config.svg_container_height,
-      margin = config.svg_margin,
+    var width = svg_config.width,
+      height = svg_config.height,
+      margin = svg_config.svg_margin,
       xData = yScale.ticks(10),
       yData = xScale.ticks(10);
   
@@ -111,6 +116,7 @@ var _create_path_grid= function(svgContainer, xScale, yScale, config) {
         [width - margin.x, yScale(xData[i])]
       ];
       // animate line
+      
       xGrid_promise_list.push(_line_path_creation_animation(xGridGroup, xdata, h_grids_conf));
   
     }
@@ -126,7 +132,7 @@ var _create_path_grid= function(svgContainer, xScale, yScale, config) {
         [xScale(yData[i]), margin.y],
         [xScale(yData[i]), height - margin.y]
       ];
-      
+     
       yGrid_promise_list.push(_line_path_creation_animation(yGridGroup, ydata, v_grids_conf));
       
 
@@ -157,13 +163,13 @@ var _create_path_grid= function(svgContainer, xScale, yScale, config) {
    
   
 
-  let animate_grids_promises = {
+  let animate_grids_funcs = {
     old_grids_remove_func: old_grids_remove_func,
     xGrid_func: run_xGrids,
     yGrid_func: run_yGrids,
   };
 
-  return animate_grids_promises
+  return animate_grids_funcs
   } //_animate_grid_creation
   
   
@@ -221,13 +227,13 @@ var _create_path_grid= function(svgContainer, xScale, yScale, config) {
    * // TODO: merge all these line making promises togheter in just one promise!
    */
   var _line_path_creation_animation = function (lineGroup, data, grids_conf, post_delay = 0) {
-
-
+     
+  
       var opacity = grids_conf.opacity,
         stroke_color = grids_conf.stroke_color,
         stroke_width = grids_conf.stroke_width,
         duration = grids_conf.duration,
-        delay = grids_conf.delay,
+        pre_delay = grids_conf.delay,
         className = grids_conf.className;
 
       // create line generator 
@@ -263,7 +269,7 @@ var _create_path_grid= function(svgContainer, xScale, yScale, config) {
               return pathLength;
             })
             .transition()
-            .delay(delay)
+            .delay(pre_delay)
             .duration(duration)
             .attrTween('stroke-dashoffset', line_tweenfunc)
             .ease(d3.easeLinear)
@@ -305,48 +311,101 @@ var _create_path_grid= function(svgContainer, xScale, yScale, config) {
 
       }
 
-      var _vec_creation_animation = function (vec, xScale, yScale, svgContainer, colorId, pre_delay = 100, post_delay = 500, onEndObj = null) {
+      var _vecs_creation_animation = function (svgContainer, vecs, xScale, yScale, vecGroupName, vec_conf_list) {
 
-        if (onEndObj) {
-          var onEndFunc = onEndObj.onEndFunc,
-            param = onEndObj.param,
-            onNextObj = onEndObj.onNextObj;
+        svgContainer.append('g').attr('class', vecGroupName);
+        var vecGroup= svgContainer.select('.'+ vecGroupName)
+    
+        var vec_draw_promises=[];
+        var vec_conf;
+        var i=0;
+
+        // create a async function for all vectors to be drawn simultaneously
+        async function vec_draw_promises_func() {
+    
+          vecs.forEach((item)=>{
+            
+            vec_conf = vec_conf_list[i] || dflt_vec_conf;
+            i+=1;
+
+            
+            
+          vec_draw_promises.push((_single_vec_creation_animation(item, xScale, yScale, vecGroup, vec_conf))())
+          })  
+          
+          await Promise.all(vec_draw_promises)
         }
 
-        svgContainer
-          .append('line')
-          .attr('x1', xScale(0))
-          .attr('y1', yScale(0))
-          .attr('x2', xScale(vec.x))
-          .attr('y2', yScale(vec.y))
-          .attr('class', 'vector')
-          .attr("stroke", `#${colorId}`)
-          .attr('stroke-width', 1.5)
-          .attr('stroke-dasharray', function () {
-            let pathLength = this.getTotalLength()
-            return pathLength;
-          })
-          .attr('stroke-dashoffset', function () {
-            let pathLength = this.getTotalLength()
-            return pathLength;
-          })
-          .transition()
-          .duration(500)
-          .delay(pre_delay)
-          .ease(d3.easeLinear)
-          .attrTween('stroke-dashoffset', line_tweenfunc)
-          .transition()
-          .duration(500)
-          .attrTween('marker-end', arrow_tweenfunc)
-          .transition()
-          .delay(post_delay)
-          .on('end', function () {
-            if (onEndObj) {
-              param ? onEndFunc(...param, onNextObj) : onEndFunc(null, onNextObj);
-            }
-          })
+
+        return vec_draw_promises_func
 
 
+      }
+
+      var _single_vec_creation_animation = function (vec, xScale, yScale, vecGroup, vec_conf) {
+      
+        var stroke_color = vec_conf.stroke_color,
+            colorId = stroke_color.split('#')[1],
+            stroke_width= vec_conf.stroke_width,
+            opacity = vec_conf.opacity,
+            duration = vec_conf.duration,
+            post_delay=vec_conf.post_delay,
+            pre_delay= vec_conf.pre_delay,
+            className= vec_conf.className;
+
+
+        var data = [[xScale(0),yScale(0)], [xScale(vec.x), yScale(vec.y)]];
+
+        // create line generator 
+        var lineGenerator = d3.line()
+        .x(function (d) {
+          return d[0];
+        })
+        .y(function (d) {
+          return d[1];
+        })
+        .curve(d3.curveLinear);
+
+
+        var vecPath = vecGroup.append('path')
+        .attr('class', className)
+        .attr('stroke', stroke_color)
+        .attr('stroke-width', stroke_width)
+        .style('fill', 'none')
+        .style('opacity', opacity);
+
+        
+
+
+        var vec_creation_promis = () => {
+          return new Promise((resolve, reject) => {
+            vecPath
+              .attr('d', lineGenerator(data))
+              .style('shape-rendering', 'crispEdges')
+              .attr('stroke-dasharray', function(){
+                let pathLength = this.getTotalLength()
+                return pathLength;
+              })
+              .attr('stroke-dashoffset', function(){
+                let pathLength = this.getTotalLength()
+                return pathLength;
+              })
+              .transition()
+              .duration(duration)
+              .delay(pre_delay)
+              .ease(d3.easeLinear)
+              .attrTween('stroke-dashoffset', line_tweenfunc)
+              .transition()
+              .duration(duration)
+              .attrTween('marker-end', arrow_tweenfunc)
+              .transition()
+              .delay(post_delay)
+              .on('end', resolve);
+
+          })
+
+        };
+    
         // tween functions for animation:
         function line_tweenfunc() {
           let pathLength = this.getTotalLength();
@@ -365,14 +424,20 @@ var _create_path_grid= function(svgContainer, xScale, yScale, config) {
           };
         }
 
+      return vec_creation_promis;
+      
       }
+
+
+
 
       var path = {
         _create_path_grid: _create_path_grid,
         _animate_grid_creation: _animate_grid_creation,
         _line_path_creation_animation: _line_path_creation_animation,
         _draw_vectors: _draw_vectors,
-        _vec_creation_animation: _vec_creation_animation
+        _vecs_creation_animation: _vecs_creation_animation, 
+        _single_vec_creation_animation:_single_vec_creation_animation
       };
 
 export default path;
