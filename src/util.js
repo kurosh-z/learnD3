@@ -48,6 +48,7 @@ var _digest_config_list = function(dflt_config, config_list){
   
 
   var new_config_list=[];
+  if (!(config_list)) {return [dflt_config]}
   config_list.forEach((config)=>{
     new_config_list.push(_digest_configs(dflt_config, config))
   })

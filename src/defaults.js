@@ -10,30 +10,36 @@ const dflt_svg_conf = {
 }
 
 
+
 const dflt_h_grids_conf = {
     opacity: 0.5,
     stroke_color: '#bbbbbb',
-    stroke_width: '1.5px',
+    stroke_width: '1.5',
     duration: 1000,
-    delay: 10,
-    className: 'originalxGrids'
+    pre_delay: 100,
+    post_delay:100,
+    groupId: 'originalxGrids',
+    domain: [-10, 10],
 };
+
 
 
 const dflt_v_grids_conf = {
     opacity: 0.5,
     stroke_color: '#808080',
-    stroke_width: '1.5px',
+    stroke_width: '1.5',
     duration: 1000,
-    delay: 10,
-    className: 'originalyGrids'
+    pre_delay: 100,
+    post_delay:100,
+    groupId: 'originalyGrids',
+    domain: [-10, 10],
 };
 
 
 const dflt_vec_conf ={
     opacity: 1,
     stroke_color:'#1DA1F2',
-    stroke_width : '1.8px',
+    stroke_width : '1.8',
     duration :500,
     pre_delay: 100,
     post_delay:300

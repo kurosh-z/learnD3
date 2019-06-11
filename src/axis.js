@@ -10,23 +10,35 @@ import * as d3 from 'd3';
 
 
 
-var _configure_axis_scales = function (svgContainer, svg_config, vecs = null, grid_domain = null) {
+var _configure_axis_scales = function (svg_config, vecs = null, grid_domain = null) {
 
   let svg_width = svg_config.width;
   let svg_height = svg_config.height;
   let margin = svg_config.svg_margin;
   var domain = {}
 
-  vecs ? domain = _calculate_domain(vecs) : domain = grid_domain;
+  if(vecs){  
+    let maxInterval = _calculate_domain(vecs) ;
+    // TODO: you should probably change _calculate_domain function 
+    domain= {x:[-maxInterval.x, maxInterval.x],
+             y:[-maxInterval.y, maxInterval.y]}
+
+  }
+  else if(grid_domain){
+    domain = grid_domain;
+  }
+  else{
+    throw new Error("you should path vectors or grid_domain ")
+  }
 
 
   let xScale = d3.scaleLinear()
-    .domain([-domain.x, domain.x])
+    .domain(domain.x)
     .range([0 + margin.x, svg_width - margin.x]);
 
 
   let yScale = d3.scaleLinear()
-    .domain([domain.y, -domain.y])
+    .domain(domain.y)
     .range([0 + margin.y, svg_height - margin.y]);
 
   
@@ -95,6 +107,8 @@ var _axisTransitions= function(svgContainer, xScale, yScale){
 
 
 }
+
+
 
 
 // calculate domain:

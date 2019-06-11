@@ -12,7 +12,7 @@
   "private": true,
   "dependencies": {
     "d3": "4.2",
-    "element-to-path": "^1.2.0"
+    "mathjs": "^6.0.1"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.130",
@@ -23,6 +23,7 @@
     "es6-promise": "^4.2.6",
     "eslint": "^5.16.0",
     "parcel-bundler": "^1.12.3",
+    "require": "^2.4.20",
     "sass": "^1.20.1"
   }
 }
